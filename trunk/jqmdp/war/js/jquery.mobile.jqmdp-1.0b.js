@@ -553,7 +553,7 @@
 		return $this;
 	}
 	function onLoadTempl(data, url) {
-		var $t = $(data);
+		var $t = replaceAbsPath($(data), url);
 		$(document.body).append($t); // JQM requires it.
 		exTemplates[url].node = $t;
 		var q = exTemplates[url].q;
@@ -562,7 +562,19 @@
 			$.jqmdp.refresh(q[i]);
 		};
 	}
-
+	function replaceAbsPath($elem, url){
+		var base = $.mobile.path.makePathAbsolute(url, location.pathname);
+		$elem.find("*[href]").each(function(){
+			var $e = $(this);
+console.log("===>"+$e.attr('href')+"+"+base+"->"+$.mobile.path.makePathAbsolute($e.attr('href'),base));
+			$e.attr('href',$.mobile.path.makePathAbsolute($e.attr('href'),base));
+		});
+		$elem.find("*[src]").each(function(){
+			var $e = $(this);
+			$e.attr('src',$.mobile.path.makePathAbsolute($e.attr('src'),base));
+		});
+		return $elem;
+	}
 	
 	/**
 	 * Handling JQM attribute.
