@@ -9,9 +9,8 @@
  * Note: JQM and $.data() problem. Data are cleared.
  */
 
-//TODO: docsにスコープインスタンスの用語定義。
-//TODO: data-dp-id のスコープをスコープに載せる
-//TODO: jqmdp() の戻り値を $this に上書きに変える。
+//TODO: ページとテンプレにデフォルトのスコープ。
+
 
 (function($) {
 	var isDebug = false;
@@ -378,6 +377,7 @@
 	function localEval(_script, _scopes, _localScope){
 		if (isDebug) console.log("localEval:"+_script);
 		var _res;
+		//var _this = _localScope.$this ? _localScope.$this[0] : window;
 		if (_scopes == null || _scopes.length == 0) {
 			with (_localScope) {
 				_res = eval(_script);
@@ -566,7 +566,6 @@
 		var base = $.mobile.path.makePathAbsolute(url, location.pathname);
 		$elem.find("*[href]").each(function(){
 			var $e = $(this);
-console.log("===>"+$e.attr('href')+"+"+base+"->"+$.mobile.path.makePathAbsolute($e.attr('href'),base));
 			$e.attr('href',$.mobile.path.makePathAbsolute($e.attr('href'),base));
 		});
 		$elem.find("*[src]").each(function(){
@@ -673,7 +672,7 @@ console.log("===>"+$e.attr('href')+"+"+base+"->"+$.mobile.path.makePathAbsolute(
 		var pt = Handle.prototype;
 		for (k in $.fn) {
 			pt[k] = eval(
-				"(function(){return $.fn."+k+".call(this.$this, arguments);})"
+				"(function(){return this.$this."+k+".apply(this.$this, arguments);})"
 			);
 		}
 		pt.origin=    function(){return this.$this;};
