@@ -17,9 +17,9 @@
 	var isDebug = false;
 
 	var PRE = "data-dp-";
-	var DP_ID = PRE+"id";
 	
 	var SCOPE = PRE+"scope";
+	var DP_ID  = PRE+"id";
 	var SHOW  = PRE+"show";
 	var SRC   = PRE+"src";
 	var HREF  = PRE+"href";
@@ -35,6 +35,7 @@
 	var FOR   = PRE+"for";
 
 	var XP_SCOPE = "*["+SCOPE+"]";
+	var XP_DP_ID  = "*["+DP_ID+"]";
 	var XP_SHOW  = "*["+SHOW+"]";
 	var XP_SRC   = "*["+SRC+"]";
 	var XP_HREF  = "*["+HREF+"]";
@@ -147,42 +148,48 @@
 	 * @param $page Page jQuery object.
 	 */
 	function processPage($page) {
-		// Take off and backup scope elements.
-		var backups = [];
-		var scopes = [];
-		var $locals = $page.find(XP_SCOPE);
-		for (var i = 0; i < $locals.length; i++) {
-			scopes.push(getScopes($locals[i]));	
-		}
-		for (var i = 0; i < $locals.length; i++) {
-			backups.push($locals[i]);
-			$($locals[i]).replaceWith("<div data-dp-backup-no="+i+">backup-"+i+"</div>");
+		if ($page == null) {
+			console.error("JQMDP processing Page is null? ignore.");
+			return;
 		}
 
-		// get data-dp-* attributs in scope.
+		// Take off and backup scope elements.
+		var $locals = $page.find(XP_SCOPE);
+		var roots       = new Array($locals.length);
+		var markers     = new Array($locals.length);
+		var scopeElmes  = new Array($locals.length);
+		var scopeAttrs  = new Array($locals.length);
+		var scopeStacks = new Array($locals.length);
+		
+		// Take off and backup scope elements.
+		for (var i=0; i<$locals.length; i++) {
+			scopeElmes[i] = $($locals[i]);
+			roots[i] = getAncestor(scopeElmes[i]);
+		}
+		// Scope partitioning.
+		for (var i=0; i<$locals.length; i++) {
+			markers[i] = $("<div>marker="+i+"</div>");
+			scopeElmes[i].replaceWith(markers[i]);
+		}
+
+		// Make attrs and scope stack in scope.
 		var pageAttrs = getAttrs($page);
-		var attrs= [];
-		for (var i = 0; i < scopes.length; i++) {
-			attrs.push(getAttrs($(backups[i])));
+		var pageScopeStack = getScopeStack(getAncestor($page), pageAttrs);
+		for (var i = 0; i < scopeElmes.length; i++) {
+			scopeAttrs[i] = getAttrs(scopeElmes[i]);
+			scopeStacks[i] = getScopeStack(roots[i], scopeAttrs[i]);
 		}
 
 		// Put back scope elements.
-		var $marks = $page.find("div[data-dp-backup-no]");
-		while ($marks.length > 0) {
-			for (var i = 0; i < $marks.length; i++) {
-				var $mark = $($marks[i]);
-				var no = $mark.attr("data-dp-backup-no");
-				$mark.replaceWith(backups[no]);
-			}
-			$marks = $page.find("div[data-dp-backup-no]");
+		for (var i=markers.length-1; i>=0; i--) {
+			markers[i].replaceWith(scopeElmes[i]);
 		}
-		
 
 		// Processing DynamicPage attributs.
-		process($page, pageAttrs, getScopes($page[0]));
-		for (var i = 0; i < scopes.length; i++) {
+		process($page, pageAttrs, pageScopeStack);
+		for (var i = 0; i < scopeElmes.length; i++) {
 			try {
-				process($(backups[i]), attrs[i], scopes[i]);
+				process(scopeElmes[i], scopeAttrs[i], scopeStacks[i]);
 			} catch (e) {
 				console.error(e.stack);
 				alert(e+"\n"+e.stack);
@@ -190,15 +197,40 @@
 		}
 
 	}
-	
-	function getScopes(node) {
-		var scopes = [];
+
+	function getAncestor($elem) {
+		var node = $elem[0];
+		var roots = [];
 		while (node != null && node != window) {
-			if (node.jqmdp_scope) scopes.push(node.jqmdp_scope);
+			if (node.jqmdp_scope !== undefined) {
+				roots.push(node);
+			}
 			node = node.parentNode;
 		}
-		return scopes;
+		return roots;
 	}
+	
+	function getScopeStack(roots, attrs) {
+		var stack = [];
+		for (var i=0; i<roots.length; i++) {
+			if (roots[i].jqmdp_scope) {
+				stack.push(roots[i].jqmdp_scope);
+			}
+			/*
+			var names = $(roots[i]).find(XP_DP_ID);
+			if (names.length > 0) {
+				var nameScope = {};
+				names.each(function(){
+					var $e = $(this);
+					nameScope[$e.attr(DP_ID)] = $e;
+				});
+				stack.push(nameScope);
+			}
+			*/
+		};
+		return stack;
+	}
+
 	function getAttrs($elem) {
 		// Predisposal to handle health of "if" and "for".
 		preProcess($elem);
@@ -228,9 +260,8 @@
 	 * @param scopes scope instance array.
 	 */
 	function process($elem, attrs, scopes) {
-		// Predisposal to handle health of "if" and "for".
-		//preProcess($elem);
-		
+		//console.log("process:"+$elem+"|"+attrs+"|"+scopes);
+
 		var localScope = {};
 		// Control sentence structure processing.
 		processCond($elem, attrs.IF, "if", IF, scopes, localScope);
@@ -435,14 +466,26 @@
 	 * @return scope  jQuery object or null.
 	 */
 	function byId($this, name) {
-		var $scopeNode = getScopeNode($this);
-		if ($scopeNode == null) return null;
-		return $($scopeNode[0]).find("*["+DP_ID+"='"+name+"']");
+		var $scope = getScopeNode($this);
+		if ($scope == null) return null;
+		
+		var $elems = $scope.find("*["+DP_ID+"='"+name+"']");
+		var result = null;
+		$elems.each(function(){
+			var $e = $(this);
+			if ($scope[0] == getScopeNode($e)[0]) {
+				if (result) throw new Error("Duplecate "+DP_ID+"="+name);
+				result = this;
+			}
+		});
+		if (result) return $(result);
+		return byId($scope.parent(), name);
 	}
 
 	//----------------------------------------------------------------------
 	// Public functions.
-	$.jqmdp = function Jqmdp(){};
+	function Jqmdp(){};
+	$.extend({jqmdp: Jqmdp});
 	$.jqmdp.getScopeNode = getScopeNode;
 	$.jqmdp.byId = byId;
 
@@ -591,7 +634,7 @@
 	 * @param method  $.jqmdp.* function name string.
 	 * @param a?      Any arguments.
 	 */
-	$.fn.jqmdp = function(method,a1,a2,a3,a4,a5,a6){
+	function jqmdp(method,a1,a2,a3,a4,a5,a6){
 		var $this = this;
 		if (method === undefined) return new Handle($this);
 		if ($this[0] === window) {
@@ -605,6 +648,8 @@
 		return new Handle($.jqmdp.byId($this,method));
 	}
 
+	$.fn.extend({jqmdp: jqmdp});
+
 	/**
 	 * Handle class for convenience.
 	 * @param $this  Target jQuery object.
@@ -612,23 +657,28 @@
 	function Handle($this) {
 		this.$this = $this;
 	}
-	Handle.prototype = {
-		scope:     function(val){return $.jqmdp.scope(this.$this,val);},
-		refresh:   function(delay){$.jqmdp.refresh(this.$this,delay);return this;},
-		byId:      function(id){return byId(this.$this,id);},
-		jqmdp:     function(id){return new Handle(byId(this.$this,id));},
-		handle:    function(id){return new Handle(byId(this.$this,id));},
-		scopeById: function(id,val){return this.jqmdp(id).scope(val);},
-		template:  function($src){$.jqmdp.template(this.$this,$src);return this;},
-		exTemplate:function(url){$.jqmdp.exTemplate(this.$this,url);return this;},
-		markup:    function(){$.jqmdp.markup(this.$this);return this;}
+	function initHandle() {
+		var pt = Handle.prototype;
+		for (k in $.fn) {
+			pt[k] = eval(
+				"(function(){return $.fn."+k+".call(this.$this, arguments);})"
+			);
+		}
+		pt.origin=    function(){return this.$this;};
+		pt.scope=     function(val){return $.jqmdp.scope(this.$this,val);};
+		pt.refresh=   function(delay){$.jqmdp.refresh(this.$this,delay);return this;};
+		pt.byId=      function(id){return new Handle(byId(this.$this,id));};
+		pt.scopeById= function(id,val){return this.byId(id).scope(val);};
+		pt.template=  function($src){$.jqmdp.template(this.$this,$src);return this;};
+		pt.exTemplate=function(url){$.jqmdp.exTemplate(this.$this,url);return this;};
+		pt.markup=    function(){$.jqmdp.markup(this.$this);return this;};
 	}
 
 	//------------------------------------------------------------------------
 	// bootup.
 	// TODO: $(document).bind("mobileinit", function(){init(document.body);});
 	if ($.mobile != null) alert("You must load 'jqmdp' before than 'jQuery mobile'.");
-	$(function(){init(document.body);});
+	$(function(){initHandle();init(document.body);});
 
 })(jQuery);
 //EOF.

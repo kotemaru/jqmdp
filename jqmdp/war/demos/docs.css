@@ -1,5 +1,5 @@
 .left-nav {
-	min-width:300px;
+	min-width:280px;
 	width:35%;
 	display:block;
 	float:left;
@@ -30,6 +30,10 @@
 }
 .right-nav pre b {
 	color: green;
+	font-style: italic;
+}
+.right-nav pre i {
+	color: #888800;
 	font-style: italic;
 }
 

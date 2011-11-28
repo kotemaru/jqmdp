@@ -52,8 +52,7 @@ JQMDP の API は同じ機能を３種類の方法で呼び出す事ができる
 
 <p>
 最初の２つは jQuery の標準の方法である。<br />
-３番目の記法は jQuery オブジェクトに JQMDP のメソッドを上書きする事で直接
-JQMDP のメソッドが呼べるようにしている。
+３番目の記法は jQuery オブジェクトをラップして JQMDP のメソッドが呼べるようにしている。
 但し、他の機能とメソッド名が衝突する場合は JQMDP が優先されるので注意が必要である。
 </p>
 
@@ -71,16 +70,30 @@ JQMDP のメソッドが呼べるようにしている。
 
 <h4>$.jqmdp.scope($this)</h4>
 <ul>
-<li>$this要素の所属する data-dp-scope属性の評価値を帰す。
+<li>$this要素の所属する スコープ インスタンス を帰す。
 <li>見付からない場合 null を帰す。
 </ul>
 
 <h4>$.jqmdp.scope($this, val)</h4>
 <ul>
-<li>$this要素の所属する data-dp-scope属性の評価値を設定する。
+<li>$this要素の所属する スコープ インスタンス を設定する。
 <li>$thisを帰す。
 </ul>
 
+<h4>$.jqmdp.byId($this, id)</h4>
+<ul>
+<li>data-dp-id属性値が id の要素を帰す。
+<li>$this要素の所属するスコープから参照可能な物のみ。
+<li>自身および祖先のスコープは参照可能であるが子孫のスコープは参照不可である。
+<li>同じ id が複数有る場合は自身のスコープに近い物を帰す。
+<li>１つのスコープに内に複数の同じ id が存在する場合はエラーとなる。
+<li>見付からない場合 null を帰す。
+</ul>
+
+<h4>$.jqmdp.scopeById($this, id)</h4>
+<ul>
+<li>$.jqmdp.byId()の結果に$.jqmdp.scope()を実行するのと同じである。
+</ul>
 
 <h4>$.jqmdp.getScopeNode($this)</h4>
 <ul>

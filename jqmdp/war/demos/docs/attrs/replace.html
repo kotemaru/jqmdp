@@ -48,7 +48,7 @@ data-dp-scope 属性によって定義されたスコープの中で評価され
 スコープ内から参照可能な変数は以下の通りである。
 <ul>
 	<li>$this : 属性の指定された要素の jQuery object。</li>
-	<li>data-dp-scope 属性で定義されたスコープのプロパティ。</li>
+	<li>data-dp-scope 属性で定義されたスコープ インスタンスのプロパティ。</li>
 	<li>グローバルスコープのプロパティ。(window, document 等)</li>
 </ul>
 
@@ -300,7 +300,7 @@ data-dp-scope 属性によって定義されたスコープの中で評価され
 
 <p>
 記述例：
-<pre>&lt;div data-dp-scope="(new ImageManager($this))">
+<pre>&lt;div data-dp-scope="({})">
   &lt;font size="7">
     &lt;a target="_blank"
       <b>data-dp-href="($this.jqmdp().byId('linkSelect').children(':selected').val())"</b>
@@ -325,6 +325,7 @@ data-dp-scope 属性によって定義されたスコープの中で評価され
 			data-dp-text="($this.jqmdp().byId('linkSelect').children(':selected').text())"
 		></a>
 	</font>
+
 
 	<select data-dp-id="linkSelect" onchange="$(this).jqmdp().refresh()">
 		<option value="http://google.com">Google</option>
