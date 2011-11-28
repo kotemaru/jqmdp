@@ -76,7 +76,7 @@
 <h2>data-dp-scope属性</h2>
 <p>
 この属性を設定された HTML 要素にスコープが設定される。
-属性値は JavaScript の式として評価されスコープの値となる。
+属性値は JavaScript の式として評価されスコープ インスタンスとなる。
 </p>
 <p>
 この属性が評価されるのは pageinit イベントのタイミングである。
@@ -92,7 +92,7 @@ data-dp-scope属性のみを評価するAPI $.jqmdp.init() が用意されてい
             &lt;!-- "scope-1" となる -->
         &lt;/span>
     &lt;/div>
-    &lt;/div <b>data-dp-scope="({dummy:'scope-2'})"</b>>
+    &lt;div <b>data-dp-scope="({dummy:'scope-2'})"</b>>
         &lt;span data-dp-text="(dummy)">
             &lt;!-- "scope-2" となる -->
         &lt;/span>
@@ -105,6 +105,29 @@ data-dp-scope属性のみを評価するAPI $.jqmdp.init() が用意されてい
     &lt;/span>
 &lt;/div>
 </pre>
+
+実行結果：
+<blockquote>
+<div data-dp-scope="({dummy:'scope-1', through:'through-1'})">
+    <div>
+        <span data-dp-text="(dummy)">
+            <!-- "scope-1" となる -->
+        </span>
+    </div>
+    <div data-dp-scope="({dummy:'scope-2'})">
+        <span data-dp-text="(dummy)">
+            <!-- "scope-2" となる -->
+        </span>
+        <span data-dp-text="(through)">
+            <!-- "through-1" となる -->
+        </span>
+    </div>
+    <span data-dp-text="(dummy)">
+        <!-- "scope-1" となる -->
+    </span>
+</div>
+</blockquote>
+
 
 この例では定数が指定されているがグローバル変数の参照や new 演算子で有っても構わない。
 JavaScriptとして評価結果を帰す必要がかるため括弧は必須である。
@@ -143,7 +166,7 @@ $this はこの属性の定義された HTML 要素の jQuery object である�
 <br/>
 但し、以下の名前はシステム予約とする。
 <ul>
-	<li>英数字以外の記号から始まる名前</li>
+	<li>アンダーバー(_)、ハイフン(-)以外の記号から始まる名前</li>
 </ul>
 </p>
 <p>
@@ -160,7 +183,7 @@ data-dp-id属性は JQMDP の API からのみ参照可能である。
     &lt;div>
         &lt;div <b>data-dp-id="mySpan"</b>>scope-text-1&lt;/div>
     &lt;/div>
-    &lt;/div data-dp-scope="({})>
+    &lt;div data-dp-scope="({})">
         &lt;div <b>data-dp-id="mySpan"</b>>scope-text-2&lt;/div>
         &lt;span data-dp-text="($.jqmdp.byId($this,'mySpan').text())">
             &lt;!-- "scope-text-2" となる -->	
@@ -172,6 +195,24 @@ data-dp-id属性は JQMDP の API からのみ参照可能である。
 &lt;/div>
 </pre>
 注：$this は span 要素の jQuery object である。
+
+実行結果：
+<blockquote>
+<div data-dp-scope="({})">
+    <div>
+        <div data-dp-id="mySpan">scope-text-1</div>
+    </div>
+    <div data-dp-scope="({})">
+        <div data-dp-id="mySpan">scope-text-2</div>
+        <span data-dp-text="($.jqmdp.byId($this,'mySpan')).text()">
+            <!-- "scope-text-2" となる -->	
+        </span>
+    </div>
+    <span data-dp-text="($.jqmdp.byId($this,'mySpan')).text()">
+	    <!-- "scope-text-1" となる -->	
+    </span>
+</div>
+</blockquote>
 
 </p>
 			</div>

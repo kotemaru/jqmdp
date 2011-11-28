@@ -48,27 +48,33 @@ HTML の id は HTML 文書全体を通して一意である事が求められ�
 スコープ内の要素にスコープを設定して入れ子にする事ができる。
 </p>
 
+<h3>スコープ インスタンス</h3>
+
 <p>
-スコープを設定するには data-dp-scope 属性の値に JavaScript
-の式を指定する。
-式の評価値はスコープ内で評価される置換属性、制御構文属性から参照する事ができる。
-また、API を使って JavaScript から参照する事もできる。
+HTML要素にスコープを設定するには data-dp-scope 属性を指定する。
+属性値は JavaScript の式である。
+この式を評価した結果を スコープ インスタンス と呼ぶ。
+<br />
+スコープ インスタンスはその HTML 要素内で評価される置換属性値、制御構文属性値の
+JavaScript 式のスコープとなる。
+つまり、HTML 上のスコープを JavaScript に適用する事ができる。
+
 
 <pre>&lt;div <b>data-dp-scope="({dummy:'scope-1', through:'through-1'})"</b>>
     &lt;div>
-        &lt;span data-dp-text="(dummy)">
+        &lt;span <i>data-dp-text="(dummy)"</i>>
             &lt;!-- "scope-1" となる -->
         &lt;/span>
     &lt;/div>
-    &lt;/div <b>data-dp-scope="({dummy:'scope-2'})"</b>>
-        &lt;span data-dp-text="(dummy)">
+    &lt;div <b>data-dp-scope="({dummy:'scope-2'})"</b>>
+        &lt;span <i>data-dp-text="(dummy)"</i>>
             &lt;!-- "scope-2" となる -->
         &lt;/span>
-        &lt;span data-dp-text="(through)">
+        &lt;span <i>data-dp-text="(through)"</i>>
             &lt;!-- "through-1" となる -->
         &lt;/span>
     &lt;/div>
-    &lt;span data-dp-text="(dummy)">
+    &lt;span <i>data-dp-text="(dummy)"</i>>
         &lt;!-- "scope-1" となる -->
     &lt;/span>
 &lt;/div>
@@ -76,9 +82,9 @@ HTML の id は HTML 文書全体を通して一意である事が求められ�
 </p>
 
 <p>
-入れ子になったスコープで親のスコープとプロパティ名が衝突する場合は
-子のスコープが有効となる。
-衝突しない場合は祖先のプロパティが参照される。
+入れ子になったスコープ内では親のスコープのプロパティも参照できる。
+プロパティ名が衝突する場合は子のスコープが有効となる。
+つまり、衝突しないかぎり祖先のプロパティが継承される。
 </p>
 
 <h3>スコープ内 id</h3>
@@ -89,15 +95,15 @@ HTML の id は HTML 文書全体を通して一意である事が求められ�
 
 <pre>&lt;div data-dp-scope="({})">
     &lt;div>
-        &lt;span <b>data-dp-id="mySpan"</b>>scope-text-1&lt;/span>
+        &lt;div <b>data-dp-id="mySpan"</b>>scope-text-1&lt;/div>
     &lt;/div>
-    &lt;/div data-dp-scope="({})>
-        &lt;span <b>data-dp-id="mySpan"</b>>scope-text-2&lt;/span>
-        &lt;span data-dp-text="($.jqmdp.byId($this,'mySpan').text())">
+    &lt;div data-dp-scope="({})">
+        &lt;div <b>data-dp-id="mySpan"</b>>scope-text-2&lt;/div>
+        &lt;span <i>data-dp-text="($.jqmdp.byId($this,'mySpan').text())"</i>>
             &lt;!-- "scope-text-2" となる -->	
         &lt;/span>
     &lt;/div>
-    &lt;span data-dp-text="($.jqmdp.byId($this,'mySpan').text())">
+    &lt;span <i>data-dp-text="($.jqmdp.byId($this,'mySpan').text())"</i>>
 	    &lt;!-- "scope-text-1" となる -->	
     &lt;/span>
 &lt;/div>
@@ -105,9 +111,13 @@ HTML の id は HTML 文書全体を通して一意である事が求められ�
 注：$this は当該 HTML 要素の jQuery object であり、デフォルトで定義される。
 
 </p>
+<p>
+祖先のスコープは参照可能であるが子孫のスコープは参照不可である。
+同じ id が複数有る場合は自身のスコープに近い物が参照できる。
+</p>
 			</div>
 		</div>
-		<div data-role="footer">(c)2011 kotemaru.org</div>
+		<div data-role="footer" data-position="fixed" data-dp-template="footer.html"></div>
 	</div>
 </body>
 

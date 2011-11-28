@@ -41,9 +41,9 @@
 jQuery Mobile のイベントを簡便にハンドリングするAPIである。
 </p>
 <p>
-幾つかの data-dp-scope 属性の評価結果のプロパティ名はイベントハンドラの為に予約される。
+幾つかの スコープ インスタンス のプロパティ名はイベントハンドラの為に予約される。
 
-<table border=1 cellspacing=0>
+<table border=1 cellspacing=0 >
 <tr><th><nobr>プロパティ名</nobr></th><th>イベント</th></tr>
 <tr><td>onPageInit</td><td>ページの初期化</td></tr>
 <tr><td>onBeforeShow</td><td>ページ表示前</td></tr>
@@ -64,24 +64,24 @@ jQuery Mobile のイベントを簡便にハンドリングするAPIである。
 使用例：
 <pre>
 &lt;script>
-	function PageDriver($this) {
-		this.$this = $this;
-	}
-	PageDriver.prototype.<b>onPageInit</b> = function(ev,$this) {
-		alert("page init");
-	}
-	PageDriver.prototype.<b>onBeforeShow</b> = function(ev,$this) {
-		alert("before show");
-	}
-	PageDriver.prototype.<b>onShow</b> = function(ev,$this) {
-		alert("show");
-	}
-	PageDriver.prototype.<b>onBeforeHide</b> = function(ev,$this) {
-		alert("before hide");
-	}
-	PageDriver.prototype.<b>onHide</b> = function(ev,$this) {
-		alert("hide");
-	}
+  function PageDriver($this) {
+    this.$this = $this;
+  }
+  PageDriver.prototype.<b>onPageInit</b> = function(ev,$this) {
+    alert("page init");
+  }
+  PageDriver.prototype.<b>onBeforeShow</b> = function(ev,$this) {
+    alert("before show");
+  }
+  PageDriver.prototype.<b>onShow</b> = function(ev,$this) {
+    alert("show");
+  }
+  PageDriver.prototype.<b>onBeforeHide</b> = function(ev,$this) {
+    alert("before hide");
+  }
+  PageDriver.prototype.<b>onHide</b> = function(ev,$this) {
+    alert("hide");
+  }
 &lt;/script>
 
 &lt;div data-role="page" data-dp-scope="(new PageDriver($this))">
