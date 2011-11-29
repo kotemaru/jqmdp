@@ -48,7 +48,7 @@ data-dp-scope 属性によって定義されたスコープの中で評価され
 スコープ内から参照可能な変数は以下の通りである。
 <ul>
 	<li>$this : 属性の指定された要素の jQuery object。</li>
-	<li>data-dp-scope 属性で定義されたスコープ インスタンスのプロパティ。</li>
+	<li>data-dp-scope 属性で定義された<a href="../../docs/concept/scope.html">スコープ インスタンス</a>のプロパティ。</li>
 	<li>グローバルスコープのプロパティ。(window, document 等)</li>
 </ul>
 
@@ -58,7 +58,12 @@ data-dp-scope 属性によって定義されたスコープの中で評価され
 置換属性が評価されるのは pagebeforeshow イベントのタイミングである。
 ページ表示以外のタイミングで評価する為の API $.jqmdp.refresh() が用意されている。
 </p>
-
+<p>
+注：現在の JavaScript 仕様は eval() 関数に this が渡せない為、
+やむをえず $this を使用している。
+これにより、当該要素を表すのにイベント属性では $(this)、
+置換属性では $this となってしまう。
+</p>
 <div data-dp-template="#replaceAttrLinkList"></div>
 			</div>
 		</div>
