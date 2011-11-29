@@ -76,14 +76,18 @@
 <h2>data-dp-scope属性</h2>
 <p>
 この属性を設定された HTML 要素にスコープが設定される。
-属性値は JavaScript の式として評価されスコープ インスタンスとなる。
+属性値は JavaScript の式として評価され<a href="../../docs/concept/scope.html">スコープ インスタンス</a>となる。
 </p>
 <p>
 この属性が評価されるのは pageinit イベントのタイミングである。
 pageinit イベントはページが実際に表示されるまで発生しないため、
 data-dp-scope属性のみを評価するAPI $.jqmdp.init() が用意されている。
 </p>
-
+<p>
+data-role="page" 属性を持つ要素がこの属性を持たない場合、
+data-dp-scope="({})" を持つ物として処理される。
+つまりページは常にスコープとなる。
+</p>
 <p>
 記述例：
 <pre>&lt;div <b>data-dp-scope="({dummy:'scope-1', through:'through-1'})"</b>>

@@ -77,6 +77,11 @@
 			doScopes(ev, $(ev.target), onBeforeHide, processPage);
 		}).live('pagehide', function(ev) {
 			doScopes(ev, $(ev.target), onHide);
+		}).each(function(){
+			var $page = $(this);
+			if ($page.attr(SCOPE) == null) {
+				$page.attr(SCOPE,"({})"); // Page is scope
+			}
 		})
 		;
 	}
@@ -559,7 +564,7 @@
 		var q = exTemplates[url].q;
 		for (var i=0; i<q.length; i++) {
 			$.jqmdp.template(q[i], $t);
-			$.jqmdp.refresh(q[i]);
+			//$.jqmdp.refresh(q[i]);
 		};
 	}
 	function replaceAbsPath($elem, url){
