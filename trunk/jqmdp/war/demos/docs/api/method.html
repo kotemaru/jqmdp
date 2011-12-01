@@ -41,92 +41,97 @@
 JQMDP の機能を JavaScript から利用する為の API である。
 </p>
 <p>
-JQMDP の API は同じ機能を３種類の方法で呼び出す事ができる。
 
-<ol>
-<li>$.jqmdp.<i>method</i>($(selector), 引数...)</li>
-<li>$(selector).jqmdp('<i>method</i>', 引数...)</li>
-<li>$(selector).jqmdp().<i>method</i>(引数...)</li>
-</ol>
-</p>
+<h4>$.jqmdp(elem, dpId) or $(elem).jqmdp(dpId)</h4>
 
-<p>
-最初の２つは jQuery の標準の方法である。<br />
-３番目の記法は jQuery オブジェクトをラップして JQMDP のメソッドが呼べるようにしている。
-但し、他の機能とメソッド名が衝突する場合は JQMDP が優先されるので注意が必要である。
-</p>
+jqmdp 機能拡張オブジェクトの取得。
 
-<h4>$.jqmdp.refresh($this, delay)</h4>
+<table width="100%" border="1" cellspacing="0">
+<tr><th>引数</th><th>必須</th><th>説明</th></tr>
+<tr><td>elem</td><td>○</td><td>起点となるHTMLElement 又は jQuery Object</td></tr>
+<tr><td>dpId</td><td>×</td><td>検索対象の data-dp-id 属性値</td></tr>
+</table>
+
 <ul>
-<li>$this要素が再描画される。
-<li>厳密には $this要素が所属するスコープ全体が再描画される。
-<li>delay が指定されていれば delayミリ秒 再描画を遅延させる。
+<li>elem を起点として dpId と同じ data-dp-id属性値を持つ jQuery object が帰される。
+<li>帰される jQuery object は jqmdp のメソッドが拡張されている。
+<li>dpId を省略した場合は elem が拡張され帰される。
+</ul>
+
+<h4>$.scope(elem, dpId, val) or $(elem).scope(dpId, val)</h4>
+
+スコープ インスタンスの取得／設定。
+
+<table width="100%" border="1" cellspacing="0">
+<tr><th>引数</th><th>必須</th><th>説明</th></tr>
+<tr><td>elem</td><td>○</td><td>起点となるHTMLElement 又は jQuery Object</td></tr>
+<tr><td>dpId</td><td>×</td><td>検索対象の data-dp-id 属性値</td></tr>
+<tr><td>val</td><td>×</td><td>設定するスコープ インスタンス</td></tr>
+</table>
+
+<ul>
+<li>elem を起点として dpId と同じ data-dp-id属性値を持つ要素の所属する スコープ インスタンス が帰される。
+<li>dpId を省略した場合は elem の所属する スコープ インスタンス が帰される。
+<li>val が指定されているならばスコープ インスタンスを val に入れ換える。</li>
+<li>見付からない場合、null を帰す。</li>
+</ul>
+
+
+
+<h4>$.jqmdp.refresh(elem, delay) or $(elem).jqmdp().refresh(delay)</h4>
+
+置換属性と制御構文属性を再評価する。
+
+<table width="100%" border="1" cellspacing="0">
+<tr><th>引数</th><th>必須</th><th>説明</th></tr>
+<tr><td>elem</td><td>○</td><td>起点となるHTMLElement 又は jQuery Object</td></tr>
+<tr><td>delay</td><td>×</td><td>遅延時間(ミリ秒)</td></tr>
+</table>
+
+<ul>
+<li>厳密には elem 要素が所属するスコープ全体が再評価される。
+<li>delay が指定されていれば delayミリ秒 再評価を遅延させる。
 <ul>
 	<li>その間にrefresh()が呼ばれたらならば最初のrefresh()は無効となる。
-	<li>これは再描画に時間がかかる場合、ユーザの操作を優先させる効果が有る。
+	<li>これは再評価に時間がかかる場合、ユーザの操作を優先させる効果が有る。
 </ul>
-<li>$thisを帰す。
-</ul>
-
-<h4>$.jqmdp.scope($this)</h4>
-<ul>
-<li>$this要素の所属する <a href="../../docs/concept/scope.html">スコープ インスタンス</a> を帰す。
-<li>見付からない場合 null を帰す。
 </ul>
 
-<h4>$.jqmdp.scope($this, val)</h4>
+<h4>$.jqmdp.args(elem) or $(elem).jqmdp().args()</h4>
+
+date-dp-args属性の値を帰す。
+
+<table width="100%" border="1" cellspacing="0">
+<tr><th>引数</th><th>必須</th><th>説明</th></tr>
+<tr><td>elem</td><td>○</td><td>HTMLElement 又は jQuery Object</td></tr>
+</table>
+
 <ul>
-<li>$this要素の所属する <a href="../../docs/concept/scope.html">スコープ インスタンス</a> を設定する。
-<li>$thisを帰す。
+<li>elem 要素に data-dp-args 属性が指定されていればその値を帰す。
 </ul>
 
-<h4>$.jqmdp.byId($this, id)</h4>
-<ul>
-<li>data-dp-id属性値が id の要素を帰す。
-<li>$this要素の所属するスコープから参照可能な物のみ。
-<li>自身および祖先のスコープは参照可能であるが子孫のスコープは参照不可である。
-<li>同じ id が複数有る場合は自身のスコープに近い物を帰す。
-<li>１つのスコープに内に複数の同じ id が存在する場合はエラーとなる。
-<li>見付からない場合 null を帰す。
-</ul>
 
-<h4>$.jqmdp.scopeById($this, id)</h4>
-<ul>
-<li>$.jqmdp.byId()の結果に$.jqmdp.scope()を実行するのと同じである。
-</ul>
+<h4>$.jqmdp.template(elem, src) </h4>
 
-<h4>$.jqmdp.getScopeNode($this)</h4>
-<ul>
-<li>$this要素の所属する data-dp-scope属性を持つ要素を帰す。
-<li>見付からない場合 null を帰す。
-</ul>
+テンプレートを挿入する。
 
-<h4>$.jqmdp.template($this, $src)</h4>
+<table width="100%" border="1" cellspacing="0">
+<tr><th>引数</th><th>必須</th><th>説明</th></tr>
+<tr><td>elem</td><td>○</td><td>挿入先の要素。(jQuery or HTMLElement)</td></tr>
+<tr><td>src</td><td>○</td><td>テンプレートの要素又はURL又はID</td></tr>
+</table>
 <ul>
-<li>テンプレート適用。dp-template属性と同じ。
-<li>$src の子要素を $this の子要素に複製する。
-<li>$thisを帰す。
-</ul>
-
-<h4>$.jqmdp.exTemplate($this, url)</h4>
-<ul>
-<li>外部テンプレート適用。
-<li>url のHTMLを読み込んで $this の子要素に複製する。
-<li>読み込みは非同期で行われる為、反映は遅れる場合が有る。
-<li>$thisを帰す。
-</ul>
-
-<h4>$.jqmdp.init($this)</h4>
-<ul>
-<li>$this要素の子孫を初期化する。
-<li>jQuery mobaile はページが表示されるまで初期化を行わないため
-その前にdata-dp-scope属性の値が必要な場合にこの関数を呼ぶ。
-<li>$thisを帰す。
+<li>elem の子要素を src で表されるテンプレートの子要素の複製で置き換える。
+<li>src が HTMLElement 又は jQuery オブジェクトの場合は、その要素をテンプレートとする。
+<li>src が文字列でかつ「#」で始まる場合は、$(src) の要素をテンプレートとする。
+<li>src がその他の文字列の場合は、外部URLとして読み込んだHTMLをテンプレートとする。
+<li>外部URLの読み込みは非同期で行われる為、反映は遅れる場合が有る。
+<li>注：テンプレートの子要素が対象で有ることに注意。
 </ul>
 
 <h4>$.jqmdp.absPath(url)</h4>
 <ul>
-<li>実行中の JavaScript ファイルを起点とする相対パスから絶対パスに変換する。
+<li>実行中の JavaScript ファイルを起点とする相対パスを絶対パスに変換する。
 <li>基本的に外部部品が相対パスでリソースにアクセスする為の物。
 </ul>
 
@@ -139,140 +144,7 @@ JQMDP の API は同じ機能を３種類の方法で呼び出す事ができる
 		</div>
 		<div data-role="footer" data-position="fixed" data-dp-template="../../footer.html"></div>
 	</div>
-	
-	<div data-role="template" id="apiLinkList"   >
-		<ul data-role="listview" data-inset="true" >
-			<li><a href="#data-dp-scope">data-dp-scope属性</a></li>
-			<li><a href="#data-dp-id">data-dp-id属性</a></li>
-		</ul>
-	</div>
 
-<!-- ======================================================================== -->
-
-	<div data-role="page" id="data-dp-scope" >
-		<div data-role="header" data-position="fixed" data-theme="e" >
-			<h1>Scope attributes</h1>
-			<a href="#index" data-icon="back" 
-				data-direction="reverse" data-iconpos="notext"></a>
-			<a href="../../index.html" data-icon="home"  data-ajax="false"
-				data-transition="none" data-iconpos="notext"></a>
-		</div>
-		<div data-role="content" >
-			<div class="left-nav">
-				<div data-dp-template="../../title.html" ></div>
-				<hr/>
-<div data-dp-template="#scopeAttrLinkList"></div>
-			</div>
-
-			<div class="right-nav" >
-<h2>data-dp-scope属性</h2>
-<p>
-この属性を設定された HTML 要素にスコープが設定される。
-属性値は JavaScript の式として評価されスコープの値となる。
-</p>
-<p>
-この属性が評価されるのは pageinit イベントのタイミングである。
-pageinit イベントはページが実際に表示されるまで発生しないため、
-data-dp-scope属性のみを評価するAPI $.jqmdp.init() が用意されている。
-</p>
-
-<p>
-記述例：
-<pre>&lt;div <b>data-dp-scope="({dummy:'scope-1', through:'through-1'})"</b>>
-    &lt;div>
-        &lt;span data-dp-text="(dummy)">
-            &lt;!-- "scope-1" となる -->
-        &lt;/span>
-    &lt;/div>
-    &lt;/div <b>data-dp-scope="({dummy:'scope-2'})"</b>>
-        &lt;span data-dp-text="(dummy)">
-            &lt;!-- "scope-2" となる -->
-        &lt;/span>
-        &lt;span data-dp-text="(through)">
-            &lt;!-- "through-1" となる -->
-        &lt;/span>
-    &lt;/div>
-    &lt;span data-dp-text="(dummy)">
-        &lt;!-- "scope-1" となる -->
-    &lt;/span>
-&lt;/div>
-</pre>
-
-この例では定数が指定されているがグローバル変数の参照や new 演算子で有っても構わない。
-JavaScriptとして評価結果を帰す必要がかるため括弧は必須である。
-</p>
-<p>
-この属性値の中で参照できる変数はグローバル変数と $this がある。
-$this はこの属性の定義された HTML 要素の jQuery object である。
-</p>
-			</div>
-		</div>
-		<div data-role="footer" data-position="fixed" data-dp-template="../../footer.html"></div>
-	</div>
-	
-<!-- ======================================================================== -->
-
-	<div data-role="page" id="data-dp-id" >
-		<div data-role="header" data-position="fixed" data-theme="e" >
-			<h1>Scope attributes</h1>
-			<a href="#index" data-icon="back" 
-				data-direction="reverse" data-iconpos="notext"></a>
-			<a href="../../index.html" data-icon="home"  data-ajax="false"
-				data-transition="none" data-iconpos="notext"></a>
-		</div>
-		<div data-role="content" >
-			<div class="left-nav">
-				<div data-dp-template="../../title.html" ></div>
-				<hr/>
-<div data-dp-template="#scopeAttrLinkList"></div>
-			</div>
-
-			<div class="right-nav" >
-<h2>data-dp-id属性</h2>
-<p>
-この属性を設定された HTML 要素にスコープ内でのみ有効な id が振られる。
-属性値は任意の文字列であり命名規則は特に無い。
-<br/>
-但し、以下の名前はシステム予約とする。
-<ul>
-	<li>英数字以外の記号から始まる名前</li>
-</ul>
-</p>
-<p>
-data-dp-id属性は JQMDP の API からのみ参照可能である。
-<ul>
-	<li>$.jqmdp.byId() は当該要素の jQuery object を帰す。</li>
-	<li>$.jqmdp.scopeById() は当該要素のスコープを帰す。</li>
-</ul>
-</p>
-
-<p>
-記述例：
-<pre>&lt;div data-dp-scope="({})">
-    &lt;div>
-        &lt;div <b>data-dp-id="mySpan"</b>>scope-text-1&lt;/div>
-    &lt;/div>
-    &lt;/div data-dp-scope="({})>
-        &lt;div <b>data-dp-id="mySpan"</b>>scope-text-2&lt;/div>
-        &lt;span data-dp-text="($.jqmdp.byId($this,'mySpan').text())">
-            &lt;!-- "scope-text-2" となる -->	
-        &lt;/span>
-    &lt;/div>
-    &lt;span data-dp-text="($.jqmdp.byId($this,'mySpan').text())">
-	    &lt;!-- "scope-text-1" となる -->	
-    &lt;/span>
-&lt;/div>
-</pre>
-注：$this は span 要素の jQuery object である。
-
-</p>
-			</div>
-		</div>
-		<div data-role="footer" data-position="fixed" data-dp-template="../../footer.html"></div>
-	</div>
-	
-	
-	
 	
 </body>
 

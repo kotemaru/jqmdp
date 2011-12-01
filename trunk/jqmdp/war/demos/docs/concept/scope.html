@@ -103,11 +103,11 @@ JavaScript 式のスコープとなる。
     &lt;/div>
     &lt;div data-dp-scope="({})">
         &lt;div <b>data-dp-id="mySpan"</b>>scope-text-2&lt;/div>
-        &lt;span <i>data-dp-text="($.jqmdp.byId($this,'mySpan').text())"</i>>
+        &lt;span <i>data-dp-text="($this.jqmdp('mySpan').text())"</i>>
             &lt;!-- "scope-text-2" となる -->	
         &lt;/span>
     &lt;/div>
-    &lt;span <i>data-dp-text="($.jqmdp.byId($this,'mySpan').text())"</i>>
+    &lt;span <i>data-dp-text="($this.jqmdp('mySpan').text())"</i>>
 	    &lt;!-- "scope-text-1" となる -->	
     &lt;/span>
 &lt;/div>
