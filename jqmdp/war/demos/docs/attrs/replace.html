@@ -7,8 +7,6 @@
 		content="width=auto; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;" />
 	<title>jqmdp demo page</title> 
 
-	
-
 	<link rel="stylesheet" href="../../docs.css" />
 	<link rel="stylesheet" href="../../../js/jqm/jquery.mobile-1.0.css" />
 	<script src="../../../js/jquery-1.6.4.js"></script>
@@ -78,7 +76,9 @@ data-dp-scope 属性によって定義されたスコープの中で評価され
 			<li><a href="#data-dp-href">data-dp-href属性</a></li>
 			<li><a href="#data-dp-value">data-dp-value属性</a></li>
 			<li><a href="#data-dp-show">data-dp-show属性</a></li>
+			<li><a href="#data-dp-class">data-dp-class属性</a></li>
 			<li><a href="#data-dp-template">data-dp-template属性</a></li>
+			<li><a href="#data-dp-args">data-dp-args属性</a></li>
 		</ul>
 	</div>
 
@@ -214,10 +214,10 @@ data-dp-scope 属性によって定義されたスコープの中で評価され
   &lt;/div>
   &lt;a href="#" data-role="button" data-icon="arrow-l" 
     data-iconpos="notext" data-inline="true"
-    onclick="$(this).jqmdp().scope().next(-1)">&lt;/a>
+    onclick="$.scope(this).next(-1)">&lt;/a>
   &lt;a href="#" data-role="button" data-icon="arrow-r" 
     data-iconpos="notext" data-inline="true"
-    onclick="$(this).jqmdp().scope().next(1)">&lt;/a>
+    onclick="$.scope(this).next(1)">&lt;/a>
 &lt;/div>
 
 &lt;script>
@@ -249,9 +249,9 @@ data-dp-scope 属性によって定義されたスコープの中で評価され
     <img data-dp-src="(current())" />
   </div>
   <a href="#" data-role="button" data-icon="arrow-l" data-iconpos="notext" data-inline="true"
-    onclick="$(this).jqmdp().scope().next(-1)"></a>
+    onclick="$.scope(this).next(-1)"></a>
   <a href="#" data-role="button" data-icon="arrow-r" data-iconpos="notext" data-inline="true"
-    onclick="$(this).jqmdp().scope().next(1)"></a>
+    onclick="$.scope(this).next(1)"></a>
 </div>
 
 <script>
@@ -309,12 +309,12 @@ data-dp-scope 属性によって定義されたスコープの中で評価され
 <pre>&lt;div data-dp-scope="({})">
   &lt;font size="7">
     &lt;a target="_blank"
-      <b>data-dp-href="($this.jqmdp().byId('linkSelect').children(':selected').val())"</b>
-      data-dp-text="($this.jqmdp().byId('linkSelect').children(':selected').text())"
+      <b>data-dp-href="($this.jqmdp('linkSelect').children(':selected').val())"</b>
+      data-dp-text="($this.jqmdp('linkSelect').children(':selected').text())"
     >&lt;/a>
   &lt;/font>
 
-  &lt;select data-dp-id="linkSelect" onchange="$(this).jqmdp().refresh()">
+  &lt;select data-dp-id="linkSelect" onchange="$.jqmdp(this).refresh()">
     &lt;option value="http://google.com">Google&lt;/option>
     &lt;option value="http://yahoo.com">Yahoo&lt;/option>
     &lt;option value="http://wikipedia.org">Wiki&lt;/option>
@@ -327,13 +327,13 @@ data-dp-scope 属性によって定義されたスコープの中で評価され
 <div data-dp-scope="({})">
 	<font size="7">
 		<a target="_blank"
-			data-dp-href="($this.jqmdp().byId('linkSelect').children(':selected').val())" 
-			data-dp-text="($this.jqmdp().byId('linkSelect').children(':selected').text())"
+			data-dp-href="($this.jqmdp('linkSelect').children(':selected').val())" 
+			data-dp-text="($this.jqmdp('linkSelect').children(':selected').text())"
 		></a>
 	</font>
 
 
-	<select data-dp-id="linkSelect" onchange="$(this).jqmdp().refresh()">
+	<select data-dp-id="linkSelect" onchange="$.jqmdp(this).refresh()">
 		<option value="http://google.com">Google</option>
 		<option value="http://yahoo.com">Yahoo</option>
 		<option value="http://wikipedia.org">Wiki</option>
@@ -444,6 +444,67 @@ data-dp-scope 属性によって定義されたスコープの中で評価され
 		</div>
 		<div data-role="footer" data-position="fixed" data-dp-template="../../footer.html"></div>
 	</div>
+<!-- ======================================================================== -->
+
+	<div data-role="page" id="data-dp-class"  data-dp-scope="({})">
+		<div data-role="header" data-position="fixed" data-theme="e" >
+			<h1>Replace attributes</h1>
+			<a href="#index" data-icon="back" 
+				data-direction="reverse" data-iconpos="notext"></a>
+			<a href="../../index.html" data-icon="home"  data-ajax="false"
+				data-transition="none" data-iconpos="notext"></a>
+		</div>
+		<div data-role="content" >
+			<div class="left-nav">
+				<div data-dp-template="../../title.html" ></div>
+				<hr/>
+<div data-dp-template="#replaceAttrLinkList"></div>
+			</div>
+
+			<div class="right-nav" >
+<h2>data-dp-class 属性</h2>
+<p>
+この属性を設定された要素の class が属性値の評価結果によって変化する。
+</p>
+<p>
+この属性値は配列でなければならない。
+配列の最初の項目は真偽値であり以降はCSSクラス名である。
+最初の項目が true ならばCSSクラスが全て当該要素に設定される。
+false ならば削除される。
+</p>
+
+<p>
+記述例：
+<pre>&lt;style>
+  .odd-class {
+    color: red;
+  }
+&lt;/style>
+&lt;div data-dp-scope="({i:0})">
+  &lt;div data-dp-for="(i=0; i&lt;10; i++)">
+    &lt;span <b>data-dp-class="([i%2==1,'odd-class'])"</b> data-dp-text="(i)">&lt;/span>
+  &lt;/div>
+&lt;/div>
+</pre>
+
+実行結果：
+<blockquote data-dp-id="example">
+<style>
+	.odd-class {
+		color: red;
+	}
+</style>
+<div data-dp-scope="({i:0})">
+	<div data-dp-for="(i=0; i<10; i++)">
+		<span data-dp-class="([i%2==1,'odd-class'])" data-dp-text="(i)"></span>
+	</div>
+</div>
+</blockquote>
+<p/>
+			</div>
+		</div>
+		<div data-role="footer" data-position="fixed" data-dp-template="../../footer.html"></div>
+	</div>
 	
 <!-- ======================================================================== -->
 
@@ -504,6 +565,60 @@ data-dp-scope 属性によって定義されたスコープの中で評価され
 <blockquote data-dp-id="example">
 	<div data-dp-template="../../footer.html"></div>
 	<div data-dp-template="#innerTemplate"></div>
+</blockquote>
+<p/>
+			</div>
+		</div>
+		<div data-role="footer" data-position="fixed" data-dp-template="../../footer.html"></div>
+	</div>
+<!-- ======================================================================== -->
+
+	<div data-role="page" id="data-dp-args"  data-dp-scope="({})">
+		<div data-role="header" data-position="fixed" data-theme="e" >
+			<h1>Replace attributes</h1>
+			<a href="#index" data-icon="back" 
+				data-direction="reverse" data-iconpos="notext"></a>
+			<a href="../../index.html" data-icon="home"  data-ajax="false"
+				data-transition="none" data-iconpos="notext"></a>
+		</div>
+		<div data-role="content" >
+			<div class="left-nav">
+				<div data-dp-template="../../title.html" ></div>
+				<hr/>
+<div data-dp-template="#replaceAttrLinkList"></div>
+			</div>
+
+			<div class="right-nav" >
+<h2>data-dp-args 属性</h2>
+<p>
+この属性を設定された要素の data-dp-vals 属性が属性値の評価結果になる。
+data-dp-vals 属性の値は API $.jqmdp.args() 関数によって取得できる。
+</p>
+<p>
+この属性は通常 data-dp-for 属性で展開される要素のイベント処理と組み合わせて使用する。
+ループで展開された要素が自身がどのループ条件で生成された物であるか知ることができる。
+</p>
+
+<p>
+記述例：
+<pre>&lt;div data-dp-scope="({list:window.location, k:0})">
+  &lt;ul data-dp-for="(k in list)" data-role="listview" >
+    &lt;li onclick="alert(<b>$.jqmdp(this).args()</b>)" 
+          <b>data-dp-args="(k)"</b>
+          data-dp-text="(list[k])" >&lt;/li>
+  &lt;/ul>
+&lt;/div>
+</pre>
+
+実行結果：
+<blockquote data-dp-id="example" style="padding: 20px;">
+<div data-dp-scope="({list:window.location, k:0})">
+	<ul data-dp-for="(k in list)" data-role="listview" >
+		<li onclick="alert($.jqmdp(this).args())" 
+					data-dp-args="(k)"
+					data-dp-text="(list[k])" ></li>
+	</ul>
+</div>
 </blockquote>
 <p/>
 			</div>

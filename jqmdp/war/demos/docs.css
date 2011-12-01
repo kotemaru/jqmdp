@@ -24,17 +24,20 @@
 	border: 1px solid black;
 	padding: 8px;
 	margin-left: 2em;
-	margin-right: 2em;
+	margin-right: 0em;
 
     white-space: pre-wrap;
 }
 .right-nav pre b {
 	color: green;
 	font-style: italic;
+	text-shadow: none;
 }
 .right-nav pre i {
-	color: #888800;
+	color: #ffff00;
 	font-style: italic;
+	text-shadow: 1px 1px 1px black;
+
 }
 
 .right-nav table {

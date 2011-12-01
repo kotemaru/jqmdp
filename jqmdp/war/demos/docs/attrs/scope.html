@@ -166,18 +166,14 @@ $this はこの属性の定義された HTML 要素の jQuery object である�
 <h2>data-dp-id属性</h2>
 <p>
 この属性を設定された HTML 要素にスコープ内でのみ有効な id が振られる。
-属性値は任意の文字列であり命名規則は特に無い。
-<br/>
-但し、以下の名前はシステム予約とする。
-<ul>
-	<li>アンダーバー(_)、ハイフン(-)以外の記号から始まる名前</li>
-</ul>
+属性値は英数字とアンダーバー(_)、ハイフン(-)のみで構成されなければならない。
+
 </p>
 <p>
 data-dp-id属性は JQMDP の API からのみ参照可能である。
 <ul>
-	<li>$.jqmdp.byId() は当該要素の jQuery object を帰す。</li>
-	<li>$.jqmdp.scopeById() は当該要素のスコープを帰す。</li>
+	<li>$(elem).jqmdp(dpId) は当該要素の jQuery object を帰す。</li>
+	<li>$(elem).scope(dpId) は当該要素のスコープ インスタンスを帰す。</li>
 </ul>
 </p>
 
@@ -189,11 +185,11 @@ data-dp-id属性は JQMDP の API からのみ参照可能である。
     &lt;/div>
     &lt;div data-dp-scope="({})">
         &lt;div <b>data-dp-id="mySpan"</b>>scope-text-2&lt;/div>
-        &lt;span data-dp-text="($.jqmdp.byId($this,'mySpan').text())">
+        &lt;span data-dp-text="($this.jqmdp('mySpan').text())">
             &lt;!-- "scope-text-2" となる -->	
         &lt;/span>
     &lt;/div>
-    &lt;span data-dp-text="($.jqmdp.byId($this,'mySpan').text())">
+    &lt;span data-dp-text="($this.jqmdp('mySpan').text())">
 	    &lt;!-- "scope-text-1" となる -->	
     &lt;/span>
 &lt;/div>
@@ -208,11 +204,11 @@ data-dp-id属性は JQMDP の API からのみ参照可能である。
     </div>
     <div data-dp-scope="({})">
         <div data-dp-id="mySpan">scope-text-2</div>
-        <span data-dp-text="($.jqmdp.byId($this,'mySpan')).text()">
+        <span data-dp-text="($this.jqmdp('mySpan').text())">
             <!-- "scope-text-2" となる -->	
         </span>
     </div>
-    <span data-dp-text="($.jqmdp.byId($this,'mySpan')).text()">
+    <span data-dp-text="($this.jqmdp('mySpan').text())">
 	    <!-- "scope-text-1" となる -->	
     </span>
 </div>

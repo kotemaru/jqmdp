@@ -9,8 +9,7 @@
  * Note: JQM and $.data() problem. Data are cleared.
  */
 
-//TODO: ページとテンプレにデフォルトのスコープ。
-
+// TODO:li bug.
 
 (function($) {
 	var isDebug = false;
@@ -18,16 +17,18 @@
 	var PRE = "data-dp-";
 	
 	var SCOPE = PRE+"scope";
-	var DP_ID  = PRE+"id";
+	var DP_ID = PRE+"id";
 	var SHOW  = PRE+"show";
 	var SRC   = PRE+"src";
 	var HREF  = PRE+"href";
 	var HTML  = PRE+"html";
 	var TEXT  = PRE+"text";
 	var VALUE = PRE+"value";
+	var CHECKED = PRE+"checked";
 	var TEMPLATE = PRE+"template";
-	var ACTIVE = PRE+"active";
-	var ACTIVE_CLASS = ACTIVE+"-class";
+	var CLASS = PRE+"class";
+	var ARGS = PRE+"args";
+	var VALS = PRE+"vals";
 
 	var IF    = PRE+"if";
 	var IFSELF= PRE+"if-self";
@@ -41,9 +42,10 @@
 	var XP_HTML  = "*["+HTML+"]";
 	var XP_TEXT  = "*["+TEXT+"]";
 	var XP_VALUE = "*["+VALUE+"]";
+	var XP_CHECKED = "*["+CHECKED+"]";
 	var XP_TEMPLATE = "*["+TEMPLATE+"]";
-	var XP_ACTIVE = "*["+ACTIVE+"]";
-	var XP_ACTIVE_CLASS = "*["+ACTIVE_CLASS+"]";
+	var XP_CLASS = "*["+CLASS+"]";
+	var XP_ARGS   = "*["+ARGS+"]";
 
 	var XP_IF    = "*["+IF+"]";
 	var XP_IFSELF= "*["+IFSELF+"]";
@@ -53,7 +55,7 @@
 	 * The preservation of the outside template.
 	 * Key is url, Value is {q:[], node: $(DOM fragment)}.
 	 * q is queue of the template application of the load waiting.
-	 * @see $.jqmdp.exTemplate()
+	 * @see exTemplate()
 	 */
 	var exTemplates = {};
 
@@ -203,6 +205,8 @@
 	}
 
 	function getAncestor($elem) {
+		//return $elem.parents("*[data-dp-scope]");
+
 		var node = $elem[0];
 		var roots = [];
 		while (node != null && node != window) {
@@ -240,20 +244,75 @@
 		preProcess($elem);
 
 		// Various substituted processing.
-		return {
-			SHOW   :$elem.find(XP_SHOW),
-			SRC    :$elem.find(XP_SRC),
-			HREF   :$elem.find(XP_HREF),
-			VALUE  :$elem.find(XP_VALUE),
-			TEXT   :$elem.find(XP_TEXT),
-			HTML   :$elem.find(XP_HTML),
-			TEMPLATE:$elem.find(XP_TEMPLATE),
-			ACTIVE_CLASS:$elem.find(XP_ACTIVE_CLASS),
-			IF     :$elem.find(XP_IF),
-			IFSELF :$elem.find(XP_IFSELF),
-			FOR    :$elem.find(XP_FOR)
-		};
+		var attrs = {};
+		attrs[SHOW]   =$elem.find(XP_SHOW);
+		attrs[SRC]    =$elem.find(XP_SRC);
+		attrs[HREF]   =$elem.find(XP_HREF);
+		attrs[VALUE]  =$elem.find(XP_VALUE);
+		attrs[CHECKED]=$elem.find(XP_CHECKED);
+		attrs[TEXT]   =$elem.find(XP_TEXT);
+		attrs[HTML]   =$elem.find(XP_HTML);
+		attrs[TEMPLATE]=$elem.find(XP_TEMPLATE);
+		attrs[CLASS]  =$elem.find(XP_CLASS);
+		attrs[ARGS]   =$elem.find(XP_ARGS);
+		attrs[IF]     =$elem.find(XP_IF);
+		attrs[IFSELF] =$elem.find(XP_IFSELF);
+		attrs[FOR]    =$elem.find(XP_FOR);
+		return attrs;
 	}
+	
+	var replaceDriver = {}
+	replaceDriver[SHOW] = function (scopes, localScope){
+		var $e = localScope.$this = $(this);
+		var bool = localEval($e.attr(SHOW), scopes, localScope);
+		bool ? $e.show() : $e.hide();
+	};
+	replaceDriver[SRC] = function (scopes, localScope){
+		var $e = localScope.$this = $(this);
+		$e.attr("src",localEval($e.attr(SRC), scopes, localScope));
+	};
+	replaceDriver[HREF] = function (scopes, localScope){
+		var $e = localScope.$this = $(this);
+		$e.attr("href",localEval($e.attr(HREF), scopes, localScope));
+	};
+	replaceDriver[VALUE] = function (scopes, localScope){
+		var $e = localScope.$this = $(this);
+		$e.val(localEval($e.attr(VALUE), scopes, localScope));
+	};
+	replaceDriver[CHECKED] = function (scopes, localScope){
+		var $e = localScope.$this = $(this);
+		var bool = localEval($e.attr(CHECKED), scopes, localScope);
+		$e.attr('checked', bool);
+		if ($e.data("checkboxradio")) $e.checkboxradio('refresh');
+	};
+	replaceDriver[TEXT] = function (scopes, localScope){
+		var $e = localScope.$this = $(this);
+		$e.text(""+localEval($e.attr(TEXT), scopes, localScope));
+	};
+	replaceDriver[HTML] = function (scopes, localScope){
+		var $e = localScope.$this = $(this);
+		$e.html(localEval($e.attr(HTML), scopes, localScope));
+	};
+	replaceDriver[TEMPLATE] = function (scopes, localScope){
+		var $e = localScope.$this = $(this);
+		template($e, $e.attr(TEMPLATE));
+	};
+	replaceDriver[CLASS] = function (scopes, localScope){
+		var $e = localScope.$this = $(this);
+		var classes = localEval($e.attr(CLASS), scopes, localScope);
+		if (classes == null || !(classes.length)) {
+			throw new Error(CLASS + "is not array.");
+		}
+		var bool = classes[0];
+		for (var i=1; i<classes.length; i++) {
+			$e.toggleClass(classes[i], bool);
+		}
+	};
+	replaceDriver[ARGS] = function (scopes, localScope){
+		var $e = localScope.$this = $(this);
+		$e.attr(VALS, localEval($e.attr(ARGS), scopes, localScope));
+	};
+
 
 	/**
 	 * DynamicPage attributes processing in one scope.
@@ -268,57 +327,19 @@
 
 		var localScope = {};
 		// Control sentence structure processing.
-		processCond($elem, attrs.IF, "if", IF, scopes, localScope);
-		processCond($elem, attrs.IFSELF, "if", IFSELF, scopes, localScope);
-		processCond($elem, attrs.FOR, "for", FOR, scopes, localScope);
+		processCond($elem, attrs[IF], "if", IF, scopes, localScope);
+		processCond($elem, attrs[IFSELF], "if", IFSELF, scopes, localScope);
+		processCond($elem, attrs[FOR], "for", FOR, scopes, localScope);
 
 		// Various substituted processing.
-		attrs.SHOW.each(function(){
-			var $e = $(this);
-			localScope.$this = $e;
-			var bool = localEval($e.attr(SHOW), scopes, localScope);
-			bool ? $e.show() : $e.hide();
-		});
-		attrs.SRC.each(function(){
-			var $e = $(this);
-			localScope.$this = $e;
-			$e.attr("src",localEval($e.attr(SRC), scopes, localScope));
-		});
-		attrs.HREF.each(function(){
-			var $e = $(this);
-			localScope.$this = $e;
-			$e.attr("href",localEval($e.attr(HREF), scopes, localScope));
-		});
-		attrs.VALUE.each(function(){
-			var $e = $(this);
-			localScope.$this = $e;
-			$e.val(localEval($e.attr(VALUE), scopes, localScope));
-		});
-		attrs.TEXT.each(function(){
-			var $e = $(this);
-			localScope.$this = $e;
-			$e.text(""+localEval($e.attr(TEXT), scopes, localScope));
-		});
-		attrs.HTML.each(function(){
-			var $e = $(this);
-			localScope.$this = $e;
-			$e.html(localEval($e.attr(HTML), scopes, localScope));
-		});
-		attrs.TEMPLATE.each(function(){
-			var $e = $(this);
-			localScope.$this = $e;
-			$.jqmdp.template($e, $e.attr(TEMPLATE));
-		});
-		attrs.ACTIVE_CLASS.each(function(){
-			var $e = $(this);
-			localScope.$this = $e;
-			var bool = localEval($e.attr(ACTIVE), scopes, localScope);
-			var classes = localEval($e.attr(ACTIVE_CLASS), scopes, localScope);
-			for (var i=0; i<classes.length; i++) {
-				$e.toggleClass(classes[i], bool);
+		for (var key in replaceDriver) {
+			attrs[key].each(function(){
+				replaceDriver[key].call(this, scopes, localScope);
+			});
+			if ($elem.attr(key)) {
+				replaceDriver[key].call($elem[0], scopes, localScope);
 			}
-		});
-
+		}
 		
 		return $elem;
 	}
@@ -337,7 +358,7 @@
 	 * @param scope     scope instance.
 	 */
 	function processCond(_$parent, _attrs, _cmd, _attr, _scopes, _localScope) {
-		_attrs.each(function(){
+		function _driver(){
 			var $this = $(this);
 			_localScope.$this = $this;
 			var _$body = this.jqmdp_body;
@@ -353,7 +374,14 @@
 			}
 			if (isDebug) console.log("cond-Eval:"+_script);
 			eval(wrapScopes(_script, _scopes, _localScope));
-		});
+		}
+		
+		if (_$parent.attr(_attr)) {
+			console.log("--->"+_$parent.html());
+			_driver.call(_$parent[0]);
+		}
+		
+		_attrs.each(_driver);
 	}
 
 	/**
@@ -424,9 +452,9 @@
 	 * @param $elem   scope element jQuery object.
 	 */
 	function preProcess($elem){
-		preProcess0($elem, XP_FOR);
-		preProcess0($elem, XP_IF);
-		preProcess0($elem, XP_IFSELF);
+		preProcess0($elem, XP_FOR, FOR);
+		preProcess0($elem, XP_IF, IF);
+		preProcess0($elem, XP_IFSELF, IFSELF);
 		return $elem;
 	}
 	
@@ -438,14 +466,19 @@
 	 * @param $elem   scope element jQuery object.
 	 * @param xpath   XPath to search an attribute.
 	 */
-	function preProcess0($elem, xpath) {
-		$elem.find(xpath).each(function(){
+	function preProcess0($elem, xpath, attr) {
+		function setBody() {
 			if (this.jqmdp_body == null) {
-				var $body = $(this).clone();
-				this.jqmdp_body = $body;
+				this.jqmdp_body = $("<div></div>");
+				this.jqmdp_body.append($(this).contents());
 			}
-		})
-		$elem.find(xpath).html("");
+		}
+		
+		if ($elem.attr(attr)) {
+			setBody.call($elem[0]);
+			$elem.html("");
+		}
+		$elem.find(xpath).each(setBody).html("");
 	}
 	
 	/**
@@ -473,7 +506,9 @@
 	function byId($this, name) {
 		var $scope = getScopeNode($this);
 		if ($scope == null) return null;
-		
+
+		if ($scope.attr(DP_ID) == name) return $scope;
+
 		var $elems = $scope.find("*["+DP_ID+"='"+name+"']");
 		var result = null;
 		$elems.each(function(){
@@ -486,14 +521,7 @@
 		if (result) return $(result);
 		return byId($scope.parent(), name);
 	}
-
-	//----------------------------------------------------------------------
-	// Public functions.
-	function Jqmdp(){};
-	$.extend({jqmdp: Jqmdp});
-	$.jqmdp.getScopeNode = getScopeNode;
-	$.jqmdp.byId = byId;
-
+	
 	/**
 	 * The scope instance to belong to of the element is returned.
 	 * If a value is appointed, I replace scope instance.
@@ -501,7 +529,7 @@
 	 * @param val    scope instance.
 	 * @return scope instance or $this.
 	 */
-	$.jqmdp.scope = function($this, val) {
+	function scope($this, val) {
 		var $scopeNode = getScopeNode($this);
 		if ($scopeNode == null) return null;
 		if (val) {
@@ -509,10 +537,18 @@
 			return $this;
 		} else {
 			if (undefined === $scopeNode[0].jqmdp_scope) {
-				doScopes(null, $this, onPageInit);
+				doScopes(null, $this, initScope);
 			}
 			return $scopeNode[0].jqmdp_scope;
 		}
+	}
+
+	/**
+	 * data-dp-vals attribute value is returned.
+	 * @param $this   jQuery object.
+	 */
+	function args($this) {
+		return $this.attr(VALS);
 	}
 
 	/**
@@ -521,19 +557,19 @@
 	 * @param $this  template target jQuery object.
 	 * @param src    Template jQuery object or url string.
 	 */
-	$.jqmdp.template = function($this, src) {
+	function template($this, src) {
 		if ( typeof src === "string") {
 			if (src.indexOf("#") == 0) {
-				template($this, $(src));
+				_template($this, $(src));
 			} else {
-				$.jqmdp.exTemplate($this, src);
+				exTemplate($this, src);
 			}
 		} else {
-			template($this, src);
+			_template($this, src);
 		}
 		return $this;
 	}
-	function template($this, $src) {
+	function _template($this, $src) {
 		$src.page();
 		$this.html("");
 		$this.append($src.clone().contents());
@@ -546,28 +582,27 @@
 	 * @param $this  template target jQuery object.
 	 * @param url    outside template url.
 	 */
-	$.jqmdp.exTemplate = function($this, url) {
+	function exTemplate($this, url) {
 		if (exTemplates[url] === undefined) {
 			exTemplates[url] = {q:[$this]};
-			$.get(url, null, function(data){onLoadTempl(data,url);});
+			$.get(url, null, function(data){_onLoadTempl(data,url);});
 		} else if (exTemplates[url].node === undefined) {
 			exTemplates[url].q.push($this);
 		} else {
-			$.jqmdp.template($this, exTemplates[url].node);
+			_template($this, exTemplates[url].node);
 		}
 		return $this;
 	}
-	function onLoadTempl(data, url) {
-		var $t = replaceAbsPath($(data), url);
+	function _onLoadTempl(data, url) {
+		var $t = _replaceAbsPath($(data), url);
 		$(document.body).append($t); // JQM requires it.
 		exTemplates[url].node = $t;
 		var q = exTemplates[url].q;
 		for (var i=0; i<q.length; i++) {
-			$.jqmdp.template(q[i], $t);
-			//$.jqmdp.refresh(q[i]);
+			_template(q[i], $t);
 		};
 	}
-	function replaceAbsPath($elem, url){
+	function _replaceAbsPath($elem, url){
 		var base = $.mobile.path.makePathAbsolute(url, location.pathname);
 		$elem.find("*[href]").each(function(){
 			var $e = $(this);
@@ -585,7 +620,7 @@
 	 * Note: use the unofficial JQM function.
 	 * @param $this  target jQuery object.
 	 */
-	$.jqmdp.markup = function($this) {
+	function markup($this) {
 		var $backup = $("<div></div>");
 		$this.replaceWith($backup);
 		var $fragment = $("<div></div>").append($this);
@@ -599,7 +634,7 @@
 	 * The inside of the scope is drawn again.
 	 * @param $this  Any jQuery object.
 	 */
-	$.jqmdp.refresh = function($this, delay) {
+	function refresh($this, delay) {
 		if (delay == null) {
 			processPage(getScopeNode($this));
 			return;
@@ -618,17 +653,9 @@
 	}
 
 	/**
-	 * Scope instance can call this function before 'pageinit' event, if necessary.
-	 * @param $this  Any jQuery object.
-	 */
-	$.jqmdp.init = function($this) {
-		doScopes(null, $this, onPageInit);
-		return $this;
-	}
-	/**
 	 * debug mode on/off;
 	 */
-	$.jqmdp.debug = function(b) {
+	function debug(b) {
 		isDebug = b;
 	}
 	
@@ -636,7 +663,7 @@
 	 * The relative path from a JavaScript source file is converted into an absolute path.
 	 * @param path relative path
 	 */
-	$.jqmdp.absPath = function(path) {
+	function absPath(path) {
 		if (!(path.match(/^\//) || path.match(/^https?:/i))) {
 			var scripts = document.getElementsByTagName("script");
 			path = (scripts[scripts.length-1].src).replace(/[^\/]*$/,path);
@@ -644,57 +671,64 @@
 		return path;
 	}
 	
-
+	//-------------------------------------------------------------------------
+	// Exports functions.
 	/**
 	 * A bridge function.
-	 * @param method  $.jqmdp.* function name string.
-	 * @param a?      Any arguments.
+	 * Extends JQMDP functions for $this.
+	 * 
+	 * @param $this   jQuery object or HTMLElement.
+	 * @param dpId    find data-dp-id attribute value. null is current.
+	 * @return Extends jQuery object.
 	 */
-	function jqmdp(method,a1,a2,a3,a4,a5,a6){
-		var $this = this;
-		if (method === undefined) return new Handle($this);
-		if ($this[0] === window) {
-			alert("JQMDP alert!\nThis is window. \nhref='javascript:$(this)' is not usable.\nPlease use onclick.");
-			return;
-		}
-		if ($.jqmdp[method]) {
-			return $.jqmdp[method]($this,a1,a2,a3,a4,a5,a6);
-		}
-		
-		return new Handle($.jqmdp.byId($this,method));
+	function export_jqmdp($this, dpId){
+		if (!($this instanceof jQuery)) $this = $($this);
+		if ($this[0] === window) throw new Error(WINDOW_OBJ_ERROR);
+		var $e = (dpId == null) ? $this : byId($this, dpId);
+		return $.extend($e, jqmdp_fn);
 	}
+	export_jqmdp.refresh=   refresh;
+	export_jqmdp.args=      args;
+	export_jqmdp.template=  template;
+	export_jqmdp.markup=    markup;
+	export_jqmdp.absPath=   absPath;
+	export_jqmdp.debug=     debug;
 
-	$.fn.extend({jqmdp: jqmdp});
+	var jqmdp_fn = {};
+	jqmdp_fn.refresh=   function(delay){return refresh(this,delay);};
+	jqmdp_fn.args=      function(){return args(this);};
 
 	/**
-	 * Handle class for convenience.
-	 * @param $this  Target jQuery object.
+	 * Set or get scope instance.
+	 * If val is not undefined, set scope instance.
+	 * 
+	 * @param $this   jQuery object or HTMLElement.
+	 * @param dpId    find data-dp-id attribute value. null is current.
+	 * @param val     new scope instance.
+	 * @return scope instance. 
 	 */
-	function Handle($this) {
-		this.$this = $this;
+	function export_scope($this, dpId, val) {
+		if (!($this instanceof jQuery)) $this = $($this);
+		if ($this[0] === window) throw new Error(WINDOW_OBJ_ERROR);
+		var $e = (dpId == null) ? $this : byId($this, dpId);
+		return scope($e, val);
 	}
-	function initHandle() {
-		var pt = Handle.prototype;
-		for (k in $.fn) {
-			pt[k] = eval(
-				"(function(){return this.$this."+k+".apply(this.$this, arguments);})"
-			);
-		}
-		pt.origin=    function(){return this.$this;};
-		pt.scope=     function(val){return $.jqmdp.scope(this.$this,val);};
-		pt.refresh=   function(delay){$.jqmdp.refresh(this.$this,delay);return this;};
-		pt.byId=      function(id){return new Handle(byId(this.$this,id));};
-		pt.scopeById= function(id,val){return this.byId(id).scope(val);};
-		pt.template=  function($src){$.jqmdp.template(this.$this,$src);return this;};
-		pt.exTemplate=function(url){$.jqmdp.exTemplate(this.$this,url);return this;};
-		pt.markup=    function(){$.jqmdp.markup(this.$this);return this;};
-	}
+	var WINDOW_OBJ_ERROR = "JQMDP alert!\nThis is window. \n"
+		+"href='javascript:$(this)' is not usable.\nPlease use onclick.";
+
+	//-------------------------------------------------------------------------
+	// jQuery extends.
+	$.extend({scope: export_scope, jqmdp: export_jqmdp});
+	$.fn.extend({
+		scope: function(a1,a2,a3,a4,a5){return export_scope(this, a1,a2,a3,a4,a5);},
+		jqmdp: function(a1,a2,a3,a4,a5){return export_jqmdp(this, a1,a2,a3,a4,a5);}
+	});
 
 	//------------------------------------------------------------------------
 	// bootup.
 	// TODO: $(document).bind("mobileinit", function(){init(document.body);});
 	if ($.mobile != null) alert("You must load 'jqmdp' before than 'jQuery mobile'.");
-	$(function(){initHandle();init(document.body);});
+	$(function(){init(document.body);});
 
 })(jQuery);
 //EOF.
