@@ -10,6 +10,7 @@
  */
 
 // TODO:li bug.
+// TODO:loop nest bug.
 
 (function($) {
 	var isDebug = false;
@@ -106,7 +107,7 @@
 		} catch(e) {
 			// Because JQM stops when I throw an exception.
 			console.error(e.stack);
-			alert(e.message+"\n"+e.stack);
+			alert(e.stack);
 		}
 	}
 
@@ -198,7 +199,7 @@
 				process(scopeElmes[i], scopeAttrs[i], scopeStacks[i]);
 			} catch (e) {
 				console.error(e.stack);
-				alert(e+"\n"+e.stack);
+				alert(e.stack);
 			}
 		}
 
@@ -409,6 +410,8 @@
 	 */
 	function localEval(_script, _scopes, _localScope){
 		if (isDebug) console.log("localEval:"+_script);
+try {
+	
 		var _res;
 		//var _this = _localScope.$this ? _localScope.$this[0] : window;
 		if (_scopes == null || _scopes.length == 0) {
@@ -427,6 +430,12 @@
 		}
 		if (isDebug) console.log("localEval=" + _res);
 		return _res;
+
+} catch (e) {
+	e.message = "eval: "+_script+"\n\n"+e.message;
+	throw e;
+}
+
 	}
 	
 	/**
@@ -689,6 +698,7 @@
 		if (!($this instanceof jQuery)) $this = $($this);
 		if ($this[0] === window) throw new Error(WINDOW_OBJ_ERROR);
 		var $e = (dpId == null) ? $this : byId($this, dpId);
+		if ($e == null) return null;
 		return $.extend($e, jqmdp_fn);
 	}
 	export_jqmdp.refresh=   refresh;
@@ -697,6 +707,7 @@
 	export_jqmdp.markup=    markup;
 	export_jqmdp.absPath=   absPath;
 	export_jqmdp.debug=     debug;
+	export_jqmdp.getScopeNode = getScopeNode;
 
 	var jqmdp_fn = {};
 	jqmdp_fn.refresh=   function(delay){return refresh(this,delay);};
