@@ -559,22 +559,23 @@
 	 * @param $this  template target jQuery object.
 	 * @param src    Template jQuery object or url string.
 	 */
-	function template($this, src) {
+	function template($this, src, callback) {
 		if ( typeof src === "string") {
 			if (src.indexOf("#") == 0) {
-				_template($this, $(src));
+				_template($this, $(src), callback);
 			} else {
-				exTemplate($this, src);
+				exTemplate($this, src, callback);
 			}
 		} else {
-			_template($this, src);
+			_template($this, src, callback);
 		}
 		return $this;
 	}
-	function _template($this, $src) {
+	function _template($this, $src, callback) {
 		$src.page();
 		$this.html("");
 		$this.append($src.clone().contents());
+		if (callback) callback($this, $src);
 	}
 
 	/**
@@ -584,24 +585,24 @@
 	 * @param $this  template target jQuery object.
 	 * @param url    outside template url.
 	 */
-	function exTemplate($this, url) {
+	function exTemplate($this, url, callback) {
 		if (exTemplates[url] === undefined) {
-			exTemplates[url] = {q:[$this]};
+			exTemplates[url] = {q:[{$this:$this, callback:callback}]};
 			$.get(url, null, function(data){_onLoadTempl(data,url);});
 		} else if (exTemplates[url].node === undefined) {
-			exTemplates[url].q.push($this);
+			exTemplates[url].q.push({$this:$this, callback:callback});
 		} else {
-			_template($this, exTemplates[url].node);
+			_template($this, exTemplates[url].node, callback);
 		}
 		return $this;
 	}
-	function _onLoadTempl(data, url) {
+	function _onLoadTempl(data, url, callback) {
 		var $t = _replaceAbsPath($(data), url);
 		$(document.body).append($t); // JQM requires it.
 		exTemplates[url].node = $t;
 		var q = exTemplates[url].q;
 		for (var i=0; i<q.length; i++) {
-			_template(q[i], $t);
+			_template(q[i].$this, $t, q[i].callback);
 		};
 	}
 	function _replaceAbsPath($elem, url){
