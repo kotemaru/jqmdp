@@ -684,6 +684,7 @@
 	 * @return Extends jQuery object.
 	 */
 	function export_jqmdp($this, dpId){
+		if ($this === undefined)  throw new Error(NULL_OBJ_ERROR);
 		if (!($this instanceof jQuery)) $this = $($this);
 		if ($this[0] === window) throw new Error(WINDOW_OBJ_ERROR);
 		var $e = (dpId == null) ? $this : byId($this, dpId);
@@ -710,6 +711,7 @@
 	 * @return scope instance. 
 	 */
 	function export_scope($this, dpId, val) {
+		if ($this === undefined)  throw new Error(NULL_OBJ_ERROR);
 		if (!($this instanceof jQuery)) $this = $($this);
 		if ($this[0] === window) throw new Error(WINDOW_OBJ_ERROR);
 		var $e = (dpId == null) ? $this : byId($this, dpId);
@@ -717,6 +719,7 @@
 	}
 	var WINDOW_OBJ_ERROR = "JQMDP alert!\nThis is window. \n"
 		+"href='javascript:$(this)' is not usable.\nPlease use onclick.";
+	var NULL_OBJ_ERROR = "Target element is null.";
 
 	//-------------------------------------------------------------------------
 	// jQuery extends.
