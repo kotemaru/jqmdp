@@ -15,6 +15,13 @@
 
 	<script src="../../../js/jquery.mobile.jqmdp-1.0b.js"></script>
 	<script src="../../../js/jqm/jquery.mobile-1.0.js"></script>
+<script>
+$(document).bind('mobileinit',function(){
+	$("#index").live('pagebeforeshow', function(ev) {
+		$("#currentDate").text(""+new Date());
+	});
+})
+</script>
 
 </head>
 
@@ -56,11 +63,26 @@ jquery.mobile.jqmdp-1.0.js</a>
 </xmp>
 </p>
 
-もっとも簡単な例を示す。
 
-<pre>&lt;div>Date: &lt;span <font color="green">data-dp-text="(new Date())"</font>>&lt;/span>&lt;/div></pre>
+簡単な例として現在の日時を表示するページを作成する。
+<p/>
+jQuery Mobile のみで行おうとした場合、以下のようになる。
+<pre>&lt;script>
+$(function(){
+  $("#index").live('pagebeforeshow', function(ev) {
+    $("#currentDate").text(""+new Date());
+  });
+})
+&lt;/script>
 
-このコードは以下のように このページを表示した日時が表示される。
+&lt;div>Date: &lt;span id="currentDate">&lt;/span>&lt;/div>
+</pre>
+<p/>
+これを JQMDP では以下のように記述できる。
+
+<pre>&lt;div>Date: &lt;span <b>data-dp-text="(new Date())"</b>>&lt;/span>&lt;/div></pre>
+
+実行結果：
 <blockquote>
 <div>Date: <span data-dp-text="(new Date())"></span></div>
 </blockquote>

@@ -504,22 +504,24 @@
 	 * @return scope  jQuery object or null.
 	 */
 	function byId($this, name) {
-		var $scope = getScopeNode($this);
-		if ($scope == null) return null;
+		var $thisScope = getScopeNode($this);
+		if ($thisScope == null) return null;
 
-		if ($scope.attr(DP_ID) == name) return $scope;
+		if ($thisScope.attr(DP_ID) == name) return $thisScope;
 
-		var $elems = $scope.find("*["+DP_ID+"='"+name+"']");
+		var $elems = $thisScope.find("*["+DP_ID+"='"+name+"']");
 		var result = null;
 		$elems.each(function(){
 			var $e = $(this);
-			if ($scope[0] == getScopeNode($e)[0]) {
+			var $tgtScope = $e.attr(SCOPE) 
+					? getScopeNode($e.parent()) : getScopeNode($e);
+			if ($thisScope[0] == $tgtScope[0]) {
 				if (result) throw new Error("Duplecate "+DP_ID+"="+name);
 				result = this;
 			}
 		});
 		if (result) return $(result);
-		return byId($scope.parent(), name);
+		return byId($thisScope.parent(), name);
 	}
 	
 	/**
