@@ -1,25 +1,6 @@
 /**
  * Radio/Selector Plugin.
  * Todo: document.
- * Ex.
-<xmp>
-			Radio:
-			<span data-dp-scope="(new Radio($this))" >
-				<a data-dp-val="a" data-dp-checked>a</a>
-				<a data-dp-val="b">b</a>
-				<a data-dp-val="c">c</a>
-			</span>
-			
-			Selector:
-			<span data-dp-scope="(new Radio($this,{multi:true}))" >
-				<a data-dp-val="a">a</a>
-				<a data-dp-val="b">b</a>
-				<a data-dp-val="c" data-dp-checked>c</a>
-				<a data-dp-val="d" data-dp-checked>d</a>
-				<a data-dp-val="e">e</a>
-			</span>
-</xmp>
- 
   */
 (function(){
 	var Package = window;
@@ -27,12 +8,12 @@
 	var This = Class.prototype;
 	Package[Class.name] = Class;
 
-	var DP_VALUE = "data-dp-val";
-	var XP_DP_VALUE = "a["+DP_VALUE+"]";
-	var XP_DP_CHECKED = "a[data-dp-checked]";
+	var XP_DP_ARGS = "a[data-dp-args]";
 	var OPTS = {
 		multi: false,
-		callback: null
+		callback: null,
+		value: null,
+		values: null
 	};
 	
 	This.initialize = function($this, opts) {
@@ -46,38 +27,36 @@
 		});
 
 		var _this = this;
-		$this.find(XP_DP_VALUE).attr({
+		var $items = $this.find(XP_DP_ARGS);
+		$items.attr({
 			href:"#", "data-role":"button",
-			"data-dp-active":"(isActive($this))", "data-dp-active-class":"(['ui-btn-active'])", 
-			onclick: "$(this).jqmdp().scope().onChange(this)"
+			"data-dp-class":"([isActive($this),'ui-btn-active'])", 
+			onclick: "$.scope(this).onChange(this)"
 		});
 		// Note: bind/live in this timing becomes invalid. Move to onclick attribute.
-		//this.$this.find(XP_DP_VALUE).live('click', function(ev){
-		//	_this.setValue($(ev.currentTarget).attr(DP_VALUE));
-		//});
-
-		if (this.opts.multi) {
-			$this.find(XP_DP_CHECKED).each(function(){
-				_this.values.push($(this).attr(DP_VALUE));
-			});
-		} else {
-			this.values = [$this.find(XP_DP_VALUE).attr(DP_VALUE)];
-			$this.find(XP_DP_CHECKED).each(function(){
-				_this.values[0] = ($(this).attr(DP_VALUE));
-			});
-		}
 
 		// markup() is necessary to apply added JQM attribute.
 		$.jqmdp.markup($this);
 	}
+	This.onPageInit = function(ev, $this){
+		if (this.opts.value) {
+			this.setValues([this.opts.value]);
+		} else if (this.opts.values) {
+			this.setValues(this.opts.values);
+		} else if (this.opts.multi != true) {
+			$this.jqmdp().refresh(); // initialize data-dp-args attr.
+			var $items = $this.find(XP_DP_ARGS);
+			this.setValues([$($items[0]).jqmdp().args()]);
+		}
+	}
 
 	This.onChange = function(a) {
-		var v = $(a).attr(DP_VALUE);
+		var v = $(a).jqmdp().args();
 		this.opts.multi ? this.toggleValue(v) : this.setValue(v);
 	}
 
 	This.isActive = function($a){
-		var v = $a.attr(DP_VALUE);
+		var v = $a.jqmdp().args();
 		return (this.values.indexOf(v)>=0);
 	}
 

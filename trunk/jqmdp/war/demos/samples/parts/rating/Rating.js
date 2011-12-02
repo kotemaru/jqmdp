@@ -18,7 +18,9 @@
 		this.$this = $this;
 		this.value = val;
 		// Rating.html をテンプレート適用している。
-		$.jqmdp.template($this, TEMPL);
+		$.jqmdp.template($this, TEMPL, function($this, $src){
+			$this.jqmdp().refresh();
+		});
 	}
 	// 値の変更
 	This.val = function(v){

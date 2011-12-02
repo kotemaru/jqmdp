@@ -111,7 +111,7 @@ date-dp-args属性の値を帰す。
 </ul>
 
 
-<h4>$.jqmdp.template(elem, src) </h4>
+<h4>$.jqmdp.template(elem, src, callback) </h4>
 
 テンプレートを挿入する。
 
@@ -119,14 +119,31 @@ date-dp-args属性の値を帰す。
 <tr><th>引数</th><th>必須</th><th>説明</th></tr>
 <tr><td>elem</td><td>○</td><td>挿入先の要素。(jQuery or HTMLElement)</td></tr>
 <tr><td>src</td><td>○</td><td>テンプレートの要素又はURL又はID</td></tr>
+<tr><td>callback</td><td>×</td><td>テンプレートの挿入後呼び出される。</td></tr>
 </table>
 <ul>
 <li>elem の子要素を src で表されるテンプレートの子要素の複製で置き換える。
 <li>src が HTMLElement 又は jQuery オブジェクトの場合は、その要素をテンプレートとする。
 <li>src が文字列でかつ「#」で始まる場合は、$(src) の要素をテンプレートとする。
 <li>src がその他の文字列の場合は、外部URLとして読み込んだHTMLをテンプレートとする。
-<li>外部URLの読み込みは非同期で行われる為、反映は遅れる場合が有る。
+<li>callback はテンプレートの挿入後呼び出される。<ul>
+	<li>引数は elem と src の jQuery Object である。</li>
+	<li>外部URLの読み込みは非同期で行われる為、この callback で完了通知を受ける。</li>
+</ul></li>
 <li>注：テンプレートの子要素が対象で有ることに注意。
+</ul>
+
+<h4>$.jqmdp.markup(elem)</h4>
+
+jQuery Mobile の初期化をもう一度行う。
+
+<table width="100%" border="1" cellspacing="0">
+<tr><th>引数</th><th>必須</th><th>説明</th></tr>
+<tr><td>elem</td><td>○</td><td>再初期化対象の要素。(jQuery or HTMLElement)</td></tr>
+</table>
+<ul>
+<li>$.attr() 関数等で jQuery Mobile の属性を追加した場合に後付で適用できる。
+<li>但し、属性によっては jQuery Mobile が二重に評価してしまい誤動作することがある。
 </ul>
 
 <h4>$.jqmdp.absPath(url)</h4>

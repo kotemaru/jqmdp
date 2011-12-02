@@ -1,12 +1,15 @@
-
+/**
+ * カレンダー部品
+ * TODO: document.
+ */
 (function(){
 	var Package = window;
 	var Class = function Calendar(){this.initialize.apply(this, arguments)};
 	var This = Class.prototype;
 	Package[Class.name] = Class;
 	
-	var TEMPL   = $.jqmdp.absPath("Calendar.html");
-	var CL_BASE  = "dp-calendar";
+	var TEMPL      = $.jqmdp.absPath("Calendar.html");
+	var CL_BASE    = "dp-calendar";
 	var CL_SELECT  = "dp-calendar-select";
 	var CL_DIALOG  = "dp-calendar-dialog";
 	var OPTS = {
@@ -18,8 +21,9 @@
 
 		this.table = [new Array(5),new Array(5),new Array(5),new Array(5),new Array(5),new Array(5),new Array(5),new Array(5)];
 		this.setDate(new Date());
-
-		$.jqmdp.exTemplate($this, TEMPL);
+		$.jqmdp.template($this, TEMPL, function($this, $src){
+			$this.jqmdp().refresh();
+		});
 
 		$this.addClass(CL_BASE);
 		if (this.opts.dialog) {
@@ -29,14 +33,14 @@
 	}
 	This.open = function() {
 		var $this = this.$this;
-		var offset = $this.parent().jqmdp().byId(this.opts.target).offset();
+		var offset = $this.parent().jqmdp(this.opts.target).offset();
 		$this.css(offset);
-		$this.fadeIn(0);
+		$this.fadeIn(200);
 		$this.show();
 	}
 	This.close = function() {
 		var _this = this;
-		this.$this.fadeOut(500, function(){
+		this.$this.fadeOut(400, function(){
 			_this.$this.hide();
 		});
 	}
@@ -82,17 +86,15 @@
 		var d = this.date;
 		return d.getFullYear()+"-"+to0n(d.getMonth()+1)+"-"+to0n(d.getDate());
 	}
+	This.yyyy_mm = function(){
+		var d = this.date;
+		return d.getFullYear()+"/"+to0n(d.getMonth()+1);
+	}
 	function to0n(n) {
 		var str = "0"+n;
 		return str.substr(str.length-2);
 	}
 
-	This.year = function(){
-		return this.date.getFullYear();
-	}
-	This.month = function(){
-		return this.date.getMonth()+1;
-	}
 	This.today = function($td, x,y){
 		$td.toggleClass(CL_SELECT, (this.date.getDate() == this.table[x][y]));
 		return this.table[x][y];
@@ -103,7 +105,7 @@
 		}
 		$.jqmdp.refresh(this.$this);
 		if (this.opts.target) {
-			this.$this.parent().jqmdp(this.opts.target).refresh();
+			$.jqmdp(this.$this, this.opts.target).refresh();
 		}
 		if (this.opts.dialog) this.close();
 	}
