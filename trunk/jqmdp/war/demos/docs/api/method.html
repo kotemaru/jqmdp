@@ -140,10 +140,16 @@ jQuery Mobile の初期化をもう一度行う。
 <table width="100%" border="1" cellspacing="0">
 <tr><th>引数</th><th>必須</th><th>説明</th></tr>
 <tr><td>elem</td><td>○</td><td>再初期化対象の要素。(jQuery or HTMLElement)</td></tr>
+<tr><td>purge</td><td>×</td><td>切り離しフラグ。</td></tr>
 </table>
 <ul>
 <li>$.attr() 関数等で jQuery Mobile の属性を追加した場合に後付で適用できる。
-<li>注：この関数は実装が不完全で属性によっては jQuery Mobile が二重に評価してしまい誤動作することがある。
+<li>elem 自体は再初期化の対象になら無い。</li>
+<li>purge が ture ならば再初期化中は elem を document から切り離す。<ul>
+	<li>この場合、elem も再初期化の対象となる。</li>
+	<li>但し、属性によっては jQuery Mobile が二重に評価してしまい誤動作することがある。
+	<li>非推奨機能とする。
+</ul>
 </ul>
 
 <h4>$.jqmdp.absPath(url)</h4>
