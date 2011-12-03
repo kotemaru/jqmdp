@@ -14,7 +14,7 @@
 	<script src="../../../js/jqm/jquery.mobile-1.0.js"></script>
 
 	<script>
-		$.jqmdp.debug(true);
+		$.jqmdp.debug(false);
 	</script>
 </head>
 
@@ -31,6 +31,7 @@
 			<a data-role="button" href="#test2">Nested scope test</a>
 			<a data-role="button" href="#test3">Dynamic list test</a>
 			<a data-role="button" href="#test4">Control sentence test</a>
+			<a data-role="button" href="#test5">refresh</a>
 		</div>
 	</div>
 	
@@ -192,11 +193,11 @@
 			<div data-dp-scope="({list:{a:'init-data',b:2,c:9,d:3},key:0})">
 				<div>Properties list：</div>
 				<a data-role="button" data-inline="true" href="#" onclick="changeList(this, location)">location</a>
-				<a data-role="button" data-inline="true" href="#" onclick="changeList(this, document.body)">document.body</a>
+				<a data-role="button" data-inline="true" href="#" onclick="changeList(this, $.jqmdp)">$.jqmdp</a>
 				<a data-role="button" data-inline="true" href="#" onclick="changeList(this, $.mobile)">$.mobile</a>
 				<br/><hr/><br/>
 				
-				<ul data-role="listview" data-dp-for="(key in list)" >
+				<ul data-role="listview" data-dp-for="(key in list)" data-inset="true">
 					<li><span data-dp-text="(key)"></span>=<span data-dp-text="(list[key])"></span></li>
 				</ul>
 				<script>
@@ -235,6 +236,43 @@
 					</tr>
 				</tbody>
 			</table>
+		</div>
+	</div>
+	<div data-role="page" id="test5" data-theme="e" >
+		<div data-role="header" >
+			<h3>test5</h3>
+			<a href="#main" data-icon="home" data-role="button" data-iconpos="notext"></a>
+		</div>
+		<div data-role="content" data-dp-scope="({w:2, h:2})">
+			<h3>Control sentence test</h3>
+
+
+			<div data-dp-scope="({y:0,x:0})" >
+				<div data-dp-for="(y=0; y<h; y++)" >
+					<ul data-role="listview" data-inset="true"
+						data-dp-for="(x=0; x<w; x++)" >
+						<li>
+							<a data-dp-text="(x+','+y)"></a>
+						</li>
+					</ul>
+				</div>
+			</div>
+			<hr/>
+			<div data-dp-scope="({y:0,x:0})" >
+					<ul data-role="listview" data-inset="true"
+						data-dp-for="(x=0; x<3; x++)" >
+						<li>
+							<a data-dp-text="(x+','+y)"></a>
+						</li>
+					</ul>
+			</div>
+			<hr/>
+			<div data-dp-scope="({y:0,x:0})" >
+					<select 
+						data-dp-for="(x=0; x<3; x++)" >
+						<option data-dp-text="(x+','+y)"></option>
+					</ul>
+			</div>
 		</div>
 	</div>
 </body>
