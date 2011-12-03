@@ -184,17 +184,17 @@ data-dp-show と違いは単なる非表示ではなく実際に子要素のノ�
 実行結果：
 <blockquote data-dp-id="example">
 <div data-dp-scope="({value:'abc'})">
-	<div>test-1:
+	<div>data-dp-if=true:
 		<span data-dp-if="(value=='abc')">
 			<span id='test-1'>test-1</span>
 		</span>
 	</div>
-	<div>test-2:
+	<div>data-dp-if=false:
 		<span data-dp-if="(value=='def')">
 			<span id='test-2'>test-2</span>
 		</span>
 	</div>
-	<div>test-3:
+	<div>data-dp-show=false:
 		<span data-dp-show="(value=='def')">
 			<span id='test-3'>test-3</span>
 		</span>
@@ -202,9 +202,9 @@ data-dp-show と違いは単なる非表示ではなく実際に子要素のノ�
 
 	<hr/>
 
-	<div>#test-1= <span data-dp-text="(document.getElementById('test-1'))"></span></div>
-	<div>#test-2= <span data-dp-text="(document.getElementById('test-2'))"></span></div>
-	<div>#test-3= <span data-dp-text="(document.getElementById('test-3'))"></span></div>
+	<div>#child of data-dp-if=true : <span data-dp-text="(document.getElementById('test-1'))"></span></div>
+	<div>#child of data-dp-if=false : <span data-dp-text="(document.getElementById('test-2'))"></span></div>
+	<div>#child of data-dp-show=false : <span data-dp-text="(document.getElementById('test-3'))"></span></div>
 </div>
 </blockquote>
 <p/>

@@ -9,7 +9,8 @@
  * Note: JQM and $.data() problem. Data are cleared.
  */
 
-// TODO:li bug.
+// TODO: elem.jqmdp_* -> data()
+// TODO: getAttrs
 
 (function($) {
 	var isDebug = false;
@@ -35,22 +36,26 @@
 	var FOR   = PRE+"for";
 
 	var XP_SCOPE = "*["+SCOPE+"]";
-	var XP_DP_ID  = "*["+DP_ID+"]";
-	var XP_SHOW  = "*["+SHOW+"]";
-	var XP_SRC   = "*["+SRC+"]";
-	var XP_HREF  = "*["+HREF+"]";
-	var XP_HTML  = "*["+HTML+"]";
-	var XP_TEXT  = "*["+TEXT+"]";
-	var XP_VALUE = "*["+VALUE+"]";
-	var XP_CHECKED = "*["+CHECKED+"]";
-	var XP_TEMPLATE = "*["+TEMPLATE+"]";
-	var XP_CLASS = "*["+CLASS+"]";
-	var XP_ARGS   = "*["+ARGS+"]";
 
-	var XP_IF    = "*["+IF+"]";
-	var XP_IFSELF= "*["+IFSELF+"]";
-	var XP_FOR   = "*["+FOR+"]";
+	var DP_ATTRS = {};
+	DP_ATTRS[SCOPE   ] = {xpath:"*["+SCOPE   +"]"};
+	DP_ATTRS[DP_ID   ] = {xpath:"*["+DP_ID   +"]"};
+	DP_ATTRS[SHOW    ] = {xpath:"*["+SHOW    +"]"};
+	DP_ATTRS[SRC     ] = {xpath:"*["+SRC     +"]"};
+	DP_ATTRS[HREF    ] = {xpath:"*["+HREF    +"]"};
+	DP_ATTRS[HTML    ] = {xpath:"*["+HTML    +"]"};
+	DP_ATTRS[TEXT    ] = {xpath:"*["+TEXT    +"]"};
+	DP_ATTRS[VALUE   ] = {xpath:"*["+VALUE   +"]"};
+	DP_ATTRS[CHECKED ] = {xpath:"*["+CHECKED +"]"};
+	DP_ATTRS[TEMPLATE] = {xpath:"*["+TEMPLATE+"]"};
+	DP_ATTRS[CLASS   ] = {xpath:"*["+CLASS   +"]"};
+	DP_ATTRS[ARGS    ] = {xpath:"*["+ARGS    +"]"};
+	//DP_ATTRS[VALS    ] = {xpath:"*["+VALS    +"]"};
 	
+	DP_ATTRS[IF      ] = {xpath:"*["+IF      +"]"};
+	DP_ATTRS[IFSELF  ] = {xpath:"*["+IFSELF  +"]"};
+	DP_ATTRS[FOR     ] = {xpath:"*["+FOR     +"]"};
+
 	/**
 	 * The preservation of the outside template.
 	 * Key is url, Value is {q:[], node: $(DOM fragment)}.
@@ -59,6 +64,11 @@
 	 */
 	var exTemplates = {};
 
+	function mobileinit(){
+		// nop.
+		//init(document.body);
+	}
+	
 	/**
 	 * The function sets an event handler of jqmdp in all JQM Pages.
 	 * @param root Usually appoint document.body.
@@ -79,6 +89,8 @@
 			doScopes(ev, $(ev.target), onBeforeHide, processPage);
 		}).live('pagehide', function(ev) {
 			doScopes(ev, $(ev.target), onHide);
+		}).live('pagebeforecreate', function(ev) {
+			preProcess($(ev.target))
 		}).each(function(){
 			var $page = $(this);
 			if ($page.attr(SCOPE) == null) {
@@ -160,48 +172,52 @@
 		}
 
 		// Take off and backup scope elements.
+		var pageAttrs = {};
+		var pageScopeStack = getScopeStack(getAncestor($page));
+
 		var $locals = $page.find(XP_SCOPE);
-		var roots       = new Array($locals.length);
-		var markers     = new Array($locals.length);
-		var scopeElmes  = new Array($locals.length);
-		var scopeAttrs  = new Array($locals.length);
+		var scopeAttrs = new Array($locals.length);
 		var scopeStacks = new Array($locals.length);
 		
-		// Take off and backup scope elements.
 		for (var i=0; i<$locals.length; i++) {
-			scopeElmes[i] = $($locals[i]);
-			roots[i] = getAncestor(scopeElmes[i]);
-		}
-		// Scope partitioning.
-		for (var i=0; i<$locals.length; i++) {
-			markers[i] = $("<div>marker="+i+"</div>");
-			scopeElmes[i].replaceWith(markers[i]);
-		}
+			scopeAttrs[i] = {};
+			var roots = getAncestor($($locals[i]));
+			scopeStacks[i] = getScopeStack(roots);
+		};
 
-		// Make attrs and scope stack in scope.
-		var pageAttrs = getAttrs($page);
-		var pageScopeStack = getScopeStack(getAncestor($page), pageAttrs);
-		for (var i = 0; i < scopeElmes.length; i++) {
-			scopeAttrs[i] = getAttrs(scopeElmes[i]);
-			scopeStacks[i] = getScopeStack(roots[i], scopeAttrs[i]);
-		}
-
-		// Put back scope elements.
-		for (var i=markers.length-1; i>=0; i--) {
-			markers[i].replaceWith(scopeElmes[i]);
+		for (var key in DP_ATTRS) {
+			for (var i=0; i<scopeAttrs.length; i++) {
+				scopeAttrs[i][key] = [];
+			};
+			if (pageAttrs[key] === undefined) pageAttrs[key] = [];
+			
+			$page.find("$["+key+"]").each(function(){
+				var $e = $(this);
+				var idx = indexOf($locals, getScopeNode($e)[0]);
+				if (idx >= 0){
+					scopeAttrs[idx][key].push($e[0]);
+				} else {
+					pageAttrs[key].push($e[0]);
+				}
+			});
 		}
 
 		// Processing DynamicPage attributs.
-		process($page, pageAttrs, pageScopeStack);
-		for (var i = 0; i < scopeElmes.length; i++) {
-			try {
-				process(scopeElmes[i], scopeAttrs[i], scopeStacks[i]);
-			} catch (e) {
-				console.error(e.stack);
-				alert(e.stack);
+		try {
+			process($page, pageAttrs, pageScopeStack);
+			for (var i = 0; i < $locals.length; i++) {
+				process($($locals[i]), scopeAttrs[i], scopeStacks[i]);
 			}
+		} catch (e) {
+			console.error(e.stack);
+			alert(e.stack);
 		}
-
+	}
+	function indexOf($locals, node) {
+		for (var i=0; i<$locals.length; i++) {
+			if ($locals[i] == node) return i;
+		}
+		return -1;
 	}
 
 	function getAncestor($elem) {
@@ -245,19 +261,9 @@
 
 		// Various substituted processing.
 		var attrs = {};
-		attrs[SHOW]   =$elem.find(XP_SHOW);
-		attrs[SRC]    =$elem.find(XP_SRC);
-		attrs[HREF]   =$elem.find(XP_HREF);
-		attrs[VALUE]  =$elem.find(XP_VALUE);
-		attrs[CHECKED]=$elem.find(XP_CHECKED);
-		attrs[TEXT]   =$elem.find(XP_TEXT);
-		attrs[HTML]   =$elem.find(XP_HTML);
-		attrs[TEMPLATE]=$elem.find(XP_TEMPLATE);
-		attrs[CLASS]  =$elem.find(XP_CLASS);
-		attrs[ARGS]   =$elem.find(XP_ARGS);
-		attrs[IF]     =$elem.find(XP_IF);
-		attrs[IFSELF] =$elem.find(XP_IFSELF);
-		attrs[FOR]    =$elem.find(XP_FOR);
+		for (var key in DP_ATTRS) {
+			attrs[key] = $elem.find(DP_ATTRS[key].xpath);
+		}
 		return attrs;
 	}
 	
@@ -333,9 +339,9 @@
 
 		// Various substituted processing.
 		for (var key in replaceDriver) {
-			attrs[key].each(function(){
-				replaceDriver[key].call(this, scopes, localScope);
-			});
+			for (var i=0; i<attrs[key].length; i++) {
+				replaceDriver[key].call(attrs[key][i], scopes, localScope);
+			};
 			if ($elem.attr(key)) {
 				replaceDriver[key].call($elem[0], scopes, localScope);
 			}
@@ -362,7 +368,7 @@
 			var $this = $(this);
 			_localScope.$this = $this;
 			var _$body = this.jqmdp_body;
-			if (isDebug) console.log(_cmd+"-body="+_$body.html());
+			if (isDebug) console.log(_cmd+"-body="+(_$body ? _$body.html() : "null"));
 
 			$this.html("");
 			var _script = _cmd+$this.attr(_attr)+"{"
@@ -379,9 +385,12 @@
 				e.message = "eval: "+_script+"\n\n"+e.message;
 				throw e;
 			}
+			_markup($this);
 		}
-		
-		_attrs.each(_driver);
+		if (_attrs == null) debugger; 
+		for (var i = 0; i < _attrs.length; i++) {
+			_driver.call(_attrs[i]);
+		}
 		if (_$parent.attr(_attr)) {
 			_driver.call(_$parent[0]);
 		}
@@ -399,9 +408,25 @@
 		var $clone = $body.clone();
 		var attrs = getAttrs($clone);
 		process($clone, attrs, scopes);
+		$clone.jqmData("theme", $.mobile.getInheritedTheme($elem, "c"));
+		$clone.page();
 		$elem.append($clone.contents());
 	}
+	function _markup($elem) {
+		var e = $elem[0];
+		while (e != document) {
+			if ((e=e.parentNode) == null) return;
+		}
 
+		var role, widget
+		if (role=$elem.jqmData("role")) {
+			widget = $elem.jqmData(role);
+		} else {
+			// TODO: other no-role of listing widget.
+			widget = $elem.jqmData("selectmenu");
+		}
+		if (widget && widget.refresh) widget.refresh(true);
+	}
 
 	/**
 	 * JavaScript character string is execute in scope instance.
@@ -462,9 +487,9 @@
 	 * @param $elem   scope element jQuery object.
 	 */
 	function preProcess($elem){
-		preProcess0($elem, XP_FOR, FOR);
-		preProcess0($elem, XP_IF, IF);
-		preProcess0($elem, XP_IFSELF, IFSELF);
+		preProcess0($elem, FOR);
+		preProcess0($elem, IF);
+		preProcess0($elem, IFSELF);
 		return $elem;
 	}
 	
@@ -476,9 +501,9 @@
 	 * @param $elem   scope element jQuery object.
 	 * @param xpath   XPath to search an attribute.
 	 */
-	function preProcess0($elem, xpath, attr) {
+	function preProcess0($elem, attr) {
 		function setBody() {
-			if (this.jqmdp_body == null) {
+			if (this.jqmdp_body === undefined) {
 				this.jqmdp_body = $("<div></div>");
 				this.jqmdp_body.append($(this).contents().clone());
 				if (isDebug) console.log("save body="+this.jqmdp_body.html());
@@ -488,7 +513,7 @@
 		if ($elem.attr(attr)) {
 			setBody.call($elem[0]);
 		}
-		$elem.find(xpath).each(setBody);
+		$elem.find(DP_ATTRS[attr].xpath).each(setBody);
 	}
 	
 	/**
@@ -747,6 +772,7 @@
 	// TODO: $(document).bind("mobileinit", function(){init(document.body);});
 	if ($.mobile != null) alert("You must load 'jqmdp' before than 'jQuery mobile'.");
 	$(function(){init(document.body);});
+	//$(document).bind('mobileinit', mobileinit);
 
 })(jQuery);
 //EOF.
