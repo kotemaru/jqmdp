@@ -441,7 +441,6 @@
 
 		try {
 			var _res;
-			//var _this = _localScope.$this ? _localScope.$this[0] : window;
 			if (_scopes == null || _scopes.length == 0) {
 				with (_localScope) {
 					_res = eval(_script);

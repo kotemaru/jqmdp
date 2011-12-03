@@ -36,19 +36,19 @@
 	}
 	
 	This.setCenterFromGPS = function() {
-		var _this = this;
+		var self = this;
 		navigator.geolocation.getCurrentPosition(function(position){
 			var lat = position.coords.latitude;
 			var lng = position.coords.longitude;
 			var center = new LatLng(lat, lng);
-			_this.map.setCenter(center);
+			self.map.setCenter(center);
 		}, function(e){
 			alert(e.message);
 		});
 	}
 	
 	This.getPlaces = function() {
-		var _this = this;
+		var self = this;
 		var pos = this.map.getCenter();
 		GPlace.getPlaces({
 			location: pos.lat()+","+pos.lng(),
@@ -56,15 +56,15 @@
 		},function(json, status) {
 			GPlace.checkError(json, status);
 			for (var i=0; i<json.results.length; i++) {
-				makeMarker(_this, json.results[i]);
+				makeMarker(self, json.results[i]);
 			};
 		});
 	}
 
-	function makeMarker(_this, data) {
+	function makeMarker(self, data) {
 		var loc = data.geometry.location;
 		var pos =  new LatLng(loc.lat, loc.lng);
-		var marker = new google.maps.Marker({position:pos, map:_this.map});
+		var marker = new google.maps.Marker({position:pos, map:self.map});
 		google.maps.event.addListener(marker, 'click', function(ev){
 			$("#Place").jqmdp("scope").setPlace(data);
 			$.mobile.changePage("#Place");

@@ -37,13 +37,13 @@
 		this.changeAddr(DEFAULT_CENTER);
 
 		// set event listener.
-		var _this = this;
+		var self = this;
 		google.maps.event.addListener(this.map, 'click', function(ev){
-			_this.marker.setPosition(ev.latLng);
-			_this.changeAddr(ev.latLng);
+			self.marker.setPosition(ev.latLng);
+			self.changeAddr(ev.latLng);
 		});
 		$(window).bind('resize',function(ev){
-			_this.updateSize();
+			self.updateSize();
 		})
 	}
 
@@ -70,14 +70,14 @@
 	 * The central location of map is set at position obtained from GPS.
 	 */
 	This.setCenterFromGPS = function() {
-		var _this = this;
+		var self = this;
 		navigator.geolocation.getCurrentPosition(function(position){
 			var lat = position.coords.latitude;
 			var lng = position.coords.longitude;
 			var center = new LatLng(lat, lng);
-			_this.map.setCenter(center);
-			_this.marker.setPosition(center);
-			_this.changeAddr(center);
+			self.map.setCenter(center);
+			self.marker.setPosition(center);
+			self.changeAddr(center);
 		}, function(e){
 			alert(e.message);
 		});
@@ -88,15 +88,15 @@
 	 * @param {LatLng} pos New location.
 	 */
 	This.changeAddr = function(pos){
-		var _this = this;
+		var self = this;
 		var geocoder = new google.maps.Geocoder();
 		geocoder.geocode({
 			latLng: pos
 		}, function(results, status){
 			if (status == google.maps.GeocoderStatus.OK) {
 				var addr = results[0].formatted_address;
-				_this.address = addr.replace(/^[^,]*[,][ ]/, "");
-				_this.$page.jqmdp().refresh();
+				self.address = addr.replace(/^[^,]*[,][ ]/, "");
+				self.$page.jqmdp().refresh();
 			}
 		});
 	}
