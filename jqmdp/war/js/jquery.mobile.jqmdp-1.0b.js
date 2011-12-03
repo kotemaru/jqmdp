@@ -10,7 +10,6 @@
  */
 
 // TODO:li bug.
-// TODO:loop nest bug.
 
 (function($) {
 	var isDebug = false;
@@ -374,15 +373,18 @@
 				_script += "else {$this.remove();}";
 			}
 			if (isDebug) console.log("cond-Eval:"+_script);
-			eval(wrapScopes(_script, _scopes, _localScope));
-		}
-		
-		if (_$parent.attr(_attr)) {
-			console.log("--->"+_$parent.html());
-			_driver.call(_$parent[0]);
+			try {
+				eval(wrapScopes(_script, _scopes, _localScope));
+			} catch (e) {
+				e.message = "eval: "+_script+"\n\n"+e.message;
+				throw e;
+			}
 		}
 		
 		_attrs.each(_driver);
+		if (_$parent.attr(_attr)) {
+			_driver.call(_$parent[0]);
+		}
 	}
 
 	/**
@@ -410,32 +412,31 @@
 	 */
 	function localEval(_script, _scopes, _localScope){
 		if (isDebug) console.log("localEval:"+_script);
-try {
-	
-		var _res;
-		//var _this = _localScope.$this ? _localScope.$this[0] : window;
-		if (_scopes == null || _scopes.length == 0) {
-			with (_localScope) {
-				_res = eval(_script);
-			}
-		} else if (_scopes.length == 1) {
-			with (_scopes[0]) {
+
+		try {
+			var _res;
+			//var _this = _localScope.$this ? _localScope.$this[0] : window;
+			if (_scopes == null || _scopes.length == 0) {
 				with (_localScope) {
 					_res = eval(_script);
 				}
+			} else if (_scopes.length == 1) {
+				with (_scopes[0]) {
+					with (_localScope) {
+						_res = eval(_script);
+					}
+				}
+			} else {
+				if (isDebug) console.log("localEval:::"+_script);
+				_res = eval(wrapScopes(_script, _scopes, _localScope));
 			}
-		} else {
-			if (isDebug) console.log("localEval:::"+_script);
-			_res = eval(wrapScopes(_script, _scopes, _localScope));
+			if (isDebug) console.log("localEval=" + _res);
+			return _res;
+
+		} catch (e) {
+			e.message = "eval: "+_script+"\n\n"+e.message;
+			throw e;
 		}
-		if (isDebug) console.log("localEval=" + _res);
-		return _res;
-
-} catch (e) {
-	e.message = "eval: "+_script+"\n\n"+e.message;
-	throw e;
-}
-
 	}
 	
 	/**
@@ -479,15 +480,15 @@ try {
 		function setBody() {
 			if (this.jqmdp_body == null) {
 				this.jqmdp_body = $("<div></div>");
-				this.jqmdp_body.append($(this).contents());
+				this.jqmdp_body.append($(this).contents().clone());
+				if (isDebug) console.log("save body="+this.jqmdp_body.html());
 			}
 		}
 		
 		if ($elem.attr(attr)) {
 			setBody.call($elem[0]);
-			$elem.html("");
 		}
-		$elem.find(xpath).each(setBody).html("");
+		$elem.find(xpath).each(setBody);
 	}
 	
 	/**
