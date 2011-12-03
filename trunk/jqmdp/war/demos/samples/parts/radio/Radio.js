@@ -26,7 +26,7 @@
 			"data-type":"horizontal"
 		});
 
-		var _this = this;
+		var self = this;
 		var $items = $this.find(XP_DP_ARGS);
 		$items.attr({
 			href:"#", "data-role":"button",

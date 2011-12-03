@@ -39,9 +39,9 @@
 		$this.show();
 	}
 	This.close = function() {
-		var _this = this;
+		var self = this;
 		this.$this.fadeOut(400, function(){
-			_this.$this.hide();
+			self.$this.hide();
 		});
 	}
 
