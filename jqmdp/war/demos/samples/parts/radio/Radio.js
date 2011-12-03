@@ -36,7 +36,7 @@
 		// Note: bind/live in this timing becomes invalid. Move to onclick attribute.
 
 		// markup() is necessary to apply added JQM attribute.
-		$.jqmdp.markup($this);
+		$.jqmdp.markup($this, true);
 	}
 	This.onPageInit = function(ev, $this){
 		if (this.opts.value) {

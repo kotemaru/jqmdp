@@ -11,7 +11,9 @@ function UserList(){this.initialize.apply(this, arguments)};
 		{id:2, firstName:"Carol", lastName:"Black", email:"carol@wiki.org", admitted:false}
 	];
 	
-	This.initialize = function($this) { }
+	This.initialize = function($this) {
+		this.i = 0;
+	}
 	This.users = function() {
 		return users;
 	}

@@ -170,6 +170,7 @@
 			console.error("JQMDP processing Page is null? ignore.");
 			return;
 		}
+		preProcess($page);
 
 		// Take off and backup scope elements.
 		var pageAttrs = {};
@@ -191,7 +192,7 @@
 			};
 			if (pageAttrs[key] === undefined) pageAttrs[key] = [];
 			
-			$page.find("$["+key+"]").each(function(){
+			$page.find(DP_ATTRS[key].xpath).each(function(){
 				var $e = $(this);
 				var idx = indexOf($locals, getScopeNode($e)[0]);
 				if (idx >= 0){
@@ -514,6 +515,11 @@
 			setBody.call($elem[0]);
 		}
 		$elem.find(DP_ATTRS[attr].xpath).each(setBody);
+		$elem.find(DP_ATTRS[attr].xpath).html("");
+		if ($elem.attr(attr)) {
+			$elem[0].html("");
+		}
+		
 	}
 	
 	/**
@@ -658,13 +664,16 @@
 	 * Note: use the unofficial JQM function.
 	 * @param $this  target jQuery object.
 	 */
-	function markup($this) {
-		var $backup = $("<div></div>");
-		$this.replaceWith($backup);
-		var $fragment = $("<div></div>").append($this);
-		$fragment.page();
-		$backup.replaceWith($this);
-		$this.show();
+	function markup($this, purge) {
+		if (purge) {
+			var $backup = $("<div></div>");
+			$this.replaceWith($backup);
+			var $fragment = $("<div></div>").append($this);
+			$fragment.page();
+			$backup.replaceWith($this);
+		} else {
+			$this.page();
+		}
 		return $this;
 	}
 	
