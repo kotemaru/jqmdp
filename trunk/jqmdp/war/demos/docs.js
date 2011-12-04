@@ -2,7 +2,7 @@
 var Docs = {};
 
 Docs.trimHtml = function(str) {
-	return str.replace(/^\s*/,"")
+	return str.replace(/^\s*/,"").replace(/\s*$/,"")
 		.replace(/\t/g,"  ")
 		.replace(/<head>([\r\n]|.)*<\/head>/,"<head>...</head>")
 		.replace(/&/g,"&amp;")
@@ -17,5 +17,29 @@ Docs.trimHtml = function(str) {
 Docs.trimJs = function(str) {
 	return str.replace(/\t/g,"  ")
 		.replace(/\/\/(.*)$/mg,"//<i>$1</i>")
+		.replace(/\/\*\/?(([\r\n]|[^\/]|[^*]\/)*)\*\//mg,"/*<i>$1</i>*/")
 	;
 }
+
+Docs.datas = {};
+
+Docs.getSrc = function(tgt, url) {
+	if (Docs.datas[url]) return Docs.datas[url];
+
+	$.ajax({
+		url: url,
+		cache: false,
+		dataType: "text",
+		success: function(data){
+			Docs.datas[url] = url.match(/[.]html$/) 
+				? Docs.trimHtml(data)
+				: Docs.trimJs(data);
+			$.jqmdp(tgt).refresh();
+		},
+		error: function(xreq,stat,err) {
+			alert(err+" "+url);
+		}
+	});
+	return "";
+}
+

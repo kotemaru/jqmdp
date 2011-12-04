@@ -13,7 +13,7 @@
 	<link rel="stylesheet" href="../../../js/jqm/jquery.mobile-1.0.css" />
 	<script src="../../../js/jquery-1.6.4.js"></script>
 
-	<script src="../../../js/jquery.mobile.jqmdp-1.0b.js"></script>
+	<script src="../../../js/jquery.mobile.jqmdp-1.0rc1.js"></script>
 	<script src="../../../js/jqm/jquery.mobile-1.0.js"></script>
 <script>
 $(document).bind('mobileinit',function(){
@@ -51,22 +51,22 @@ $(document).bind('mobileinit',function(){
 </p>
 
 <p>
-まずは <a target="_blank" href="../../../js/jquery.mobile.jqmdp-1.0b.js">
-jquery.mobile.jqmdp-1.0.js</a>
+まずは <a target="_blank" href="../../../js/jquery.mobile.jqmdp-1.0rc1.js">
+jquery.mobile.jqmdp-1.0rc1.js</a>
 をダウンロードして自分のWebサイトに配置する。
 <br/>
-配置した jquery.mobile.jqmdp-1.0.js を jquery.mobile-1.0.js の直前に読み込めば準備完了である。
+配置した jquery.mobile.jqmdp-1.0rc1.js を jquery.mobile-1.0.js の直前に読み込めば準備完了である。
 <br/>
 <xmp><script src="jquery-1.6.4.js"></script>
-<script src="jquery.mobile.jqmdp-1.0.js"></script>
+<script src="jquery.mobile.jqmdp-1.0rc1.js"></script>
 <script src="jquery.mobile-1.0.js"></script>
 </xmp>
 </p>
 
 
-簡単な例として現在の日時を表示するページを作成する。
+簡単な例として現在の日時を表示するページの記述を比較する。
 <p/>
-jQuery Mobile のみで行おうとした場合、以下のようになる。
+jQuery Mobile:
 <pre>&lt;script>
 $(function(){
   $("#index").live('pagebeforeshow', function(ev) {
@@ -78,11 +78,11 @@ $(function(){
 &lt;div>Date: &lt;span id="currentDate">&lt;/span>&lt;/div>
 </pre>
 <p/>
-これを JQMDP では以下のように記述できる。
+JQMDP:
 
 <pre>&lt;div>Date: &lt;span <b>data-dp-text="(new Date())"</b>>&lt;/span>&lt;/div></pre>
-
-実行結果：
+<br/>
+実行結果はいずれも同じである。
 <blockquote>
 <div>Date: <span data-dp-text="(new Date())"></span></div>
 </blockquote>
