@@ -18,7 +18,18 @@
 	if (undefined === window.console) {
 		window.console = {log:function(){}, error:function(){}}; 
 	}
-	
+	/**
+	 * For a bug of IE.
+	 * $(e).attr(key,val)   -> IE is error.
+	 * $(e).attr({key:val}) -> IE is success.
+	 * IE death.
+	 */
+	function keyval(key, val) {
+		var obj = {};
+		obj[key] = val;
+		return obj;
+	}
+
 	//-------------------------------------------------------------------------
 	// Static variables.
 	//-------------------------------------------------------------------------
@@ -107,8 +118,10 @@
 		}
 	};
 	REPLACE_DRIVER[ARGS] = function ($e, scopes, localScope){
-		$e.attr({"data-dp-vals": localEval($e.attr(ARGS), scopes, localScope)});
+		var val = localEval($e.attr(ARGS), scopes, localScope);
+		$e.attr(keyval(VALS, val));
 	};
+
 
 	/**
 	 * The preservation of the outside template.
@@ -156,10 +169,9 @@
 		}).each(function(){
 			var $page = $(this);
 			if ($page.attr(SCOPE) == null) {
-				$page.attr("data-dp-scope","({})"); // Page is default scope.
+				$page.attr(keyval(SCOPE,"({})")); // Page is default scope.
 			}
 		})
-		;
 	}
 
 	/**
