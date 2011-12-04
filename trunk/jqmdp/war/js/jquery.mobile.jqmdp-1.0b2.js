@@ -1,5 +1,5 @@
 /*
-* jQuery Mobile Dynamic Page plugin v1.0rc1
+* jQuery Mobile Dynamic Page plugin v1.0b2
 *
 * Copyright 2011 (c) kotemaru@kotemaru.org
 * Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
@@ -74,17 +74,17 @@
 		bool ? $e.show() : $e.hide();
 	};
 	REPLACE_DRIVER[SRC] = function ($e, scopes, localScope){
-		$e.attr("src",localEval($e.attr(SRC), scopes, localScope));
+		$e.attr({src: localEval($e.attr(SRC), scopes, localScope)});
 	};
 	REPLACE_DRIVER[HREF] = function ($e, scopes, localScope){
-		$e.attr("href",localEval($e.attr(HREF), scopes, localScope));
+		$e.attr({href: localEval($e.attr(HREF), scopes, localScope)});
 	};
 	REPLACE_DRIVER[VALUE] = function ($e, scopes, localScope){
 		$e.val(localEval($e.attr(VALUE), scopes, localScope));
 	};
 	REPLACE_DRIVER[CHECKED] = function ($e, scopes, localScope){
 		var bool = localEval($e.attr(CHECKED), scopes, localScope);
-		$e.attr('checked', bool);
+		$e.attr({'checked': bool});
 		if ($e.jqmData("checkboxradio")) $e.checkboxradio('refresh');
 	};
 	REPLACE_DRIVER[TEXT] = function ($e, scopes, localScope){
@@ -107,7 +107,7 @@
 		}
 	};
 	REPLACE_DRIVER[ARGS] = function ($e, scopes, localScope){
-		$e.attr(VALS,localEval($e.attr(ARGS), scopes, localScope));
+		$e.attr({"data-dp-vals": localEval($e.attr(ARGS), scopes, localScope)});
 	};
 
 	/**
@@ -156,7 +156,7 @@
 		}).each(function(){
 			var $page = $(this);
 			if ($page.attr(SCOPE) == null) {
-				$page.attr(SCOPE,"({})"); // Page is default scope.
+				$page.attr("data-dp-scope","({})"); // Page is default scope.
 			}
 		})
 		;
@@ -614,11 +614,11 @@
 		var base = $.mobile.path.makePathAbsolute(url, location.pathname);
 		$elem.find("*[href]").each(function(){
 			var $e = $(this);
-			$e.attr('href',$.mobile.path.makePathAbsolute($e.attr('href'),base));
+			$e.attr({'href': $.mobile.path.makePathAbsolute($e.attr('href'), base)});
 		});
 		$elem.find("*[src]").each(function(){
 			var $e = $(this);
-			$e.attr('src',$.mobile.path.makePathAbsolute($e.attr('src'),base));
+			$e.attr({'src': $.mobile.path.makePathAbsolute($e.attr('src'), base)});
 		});
 		return $elem;
 	}
