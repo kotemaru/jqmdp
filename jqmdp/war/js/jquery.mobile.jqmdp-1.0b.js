@@ -232,7 +232,7 @@
 			var node = $e[0];
 			var stack = [];
 			while (node != null && node !== document && node !== window) {
-				if (node.jqmdp_scope !== undefined) {
+				if (node.jqmdp_scope != null) {
 					stack.push(node.jqmdp_scope);
 				}
 				node = node.parentNode;
