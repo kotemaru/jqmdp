@@ -1,5 +1,5 @@
 /*
-* jQuery Mobile Dynamic Page plugin
+* jQuery Mobile Dynamic Page plugin v1.0rc1
 *
 * Copyright 2011 (c) kotemaru@kotemaru.org
 * Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
@@ -12,9 +12,9 @@
 
 (function($) {
 	//-------------------------------------------------------------------------
-	// Static virables.
+	// Static variables.
 	//-------------------------------------------------------------------------
-	var isDebug = true;
+	var isDebug = false;
 
 	var PRE = "data-dp-";
 	
@@ -568,10 +568,13 @@
 		return $this;
 	}
 	function _template($this, $src, callback) {
-		$src.page();
+		var $clone = $src.clone();
+		$clone.page();
 		$this.html("");
-		$this.append($src.clone().contents());
-		if (callback) callback($this, $src);
+		$this.append($clone.contents());
+		if (callback) {
+			setTimeout(function(){callback($this, $src);}, 5);
+		}
 	}
 
 	/**

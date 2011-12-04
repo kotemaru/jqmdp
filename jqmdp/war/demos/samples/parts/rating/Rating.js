@@ -17,12 +17,12 @@
 	This.initialize = function($this, val) {
 		this.$this = $this;
 		this.value = val;
-		// Rating.html をテンプレート適用している。
+		// Rating.html 読み込んでテンプレート適用している。
 		$.jqmdp.template($this, TEMPL, function($this, $src){
-			$this.jqmdp().refresh();
+			$this.jqmdp().refresh(); // 読み込み完了時に再描画。
 		});
 	}
-	// 値の変更
+	// 値の変更。星をクリックすると呼ばれる。
 	This.val = function(v){
 		this.value = v;
 		// 画面に反映している。
