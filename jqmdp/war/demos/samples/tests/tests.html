@@ -8,13 +8,14 @@
 	<title>jqmdp demo page</title> 
 
 	<link rel="stylesheet" href="../../../js/jqm/jquery.mobile-1.0.css" />
+
 	<script src="../../../js/jquery-1.6.4.js"></script>
 
-	<script src="../../../js/jquery.mobile.jqmdp-1.0rc1.js"></script>
+	<script src="../../../js/jquery.mobile.jqmdp-1.0b2.js"></script>
 	<script src="../../../js/jqm/jquery.mobile-1.0.js"></script>
 
 	<script>
-		$.jqmdp.debug(false);
+		$.jqmdp.debug(true);
 	</script>
 </head>
 
@@ -171,7 +172,7 @@
 			</script>
 
 			<div data-dp-scope="({k:0})">
-				<div data-dp-for="(k in testMap)">
+				<div data-dp-for="(var k in testMap)">
 					<div><span data-dp-text="(k)"></span>=<span data-dp-text="(testMap[k])"></span></div>
 				</div>
 			</div>
