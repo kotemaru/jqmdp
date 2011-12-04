@@ -7,13 +7,14 @@
 /*
  * Warn: My English is very doubtful.
  * Note: JQM and $.data() problem. Data are cleared.
+ *       I pollute jqmdp_scope and jqmdp_body of HTMLElement.
  */
 
-// TODO: elem.jqmdp_* -> data()
-// TODO: getAttrs
-
 (function($) {
-	var isDebug = false;
+	//-------------------------------------------------------------------------
+	// Static virables.
+	//-------------------------------------------------------------------------
+	var isDebug = true;
 
 	var PRE = "data-dp-";
 	
@@ -37,6 +38,7 @@
 
 	var XP_SCOPE = "*["+SCOPE+"]";
 
+	/** data-dp-* attributes listing. */
 	var DP_ATTRS = {};
 	DP_ATTRS[SCOPE   ] = {xpath:"*["+SCOPE   +"]"};
 	DP_ATTRS[DP_ID   ] = {xpath:"*["+DP_ID   +"]"};
@@ -56,6 +58,52 @@
 	DP_ATTRS[IFSELF  ] = {xpath:"*["+IFSELF  +"]"};
 	DP_ATTRS[FOR     ] = {xpath:"*["+FOR     +"]"};
 
+
+	/**
+	 * Replace attribute processors.
+	 */
+	var REPLACE_DRIVER = {}
+	REPLACE_DRIVER[SHOW] = function ($e, scopes, localScope){
+		var bool = localEval($e.attr(SHOW), scopes, localScope);
+		bool ? $e.show() : $e.hide();
+	};
+	REPLACE_DRIVER[SRC] = function ($e, scopes, localScope){
+		$e.attr("src",localEval($e.attr(SRC), scopes, localScope));
+	};
+	REPLACE_DRIVER[HREF] = function ($e, scopes, localScope){
+		$e.attr("href",localEval($e.attr(HREF), scopes, localScope));
+	};
+	REPLACE_DRIVER[VALUE] = function ($e, scopes, localScope){
+		$e.val(localEval($e.attr(VALUE), scopes, localScope));
+	};
+	REPLACE_DRIVER[CHECKED] = function ($e, scopes, localScope){
+		var bool = localEval($e.attr(CHECKED), scopes, localScope);
+		$e.attr('checked', bool);
+		if ($e.jqmData("checkboxradio")) $e.checkboxradio('refresh');
+	};
+	REPLACE_DRIVER[TEXT] = function ($e, scopes, localScope){
+		$e.text(""+localEval($e.attr(TEXT), scopes, localScope));
+	};
+	REPLACE_DRIVER[HTML] = function ($e, scopes, localScope){
+		$e.html(localEval($e.attr(HTML), scopes, localScope));
+	};
+	REPLACE_DRIVER[TEMPLATE] = function ($e, scopes, localScope){
+		template($e, $e.attr(TEMPLATE));
+	};
+	REPLACE_DRIVER[CLASS] = function ($e, scopes, localScope){
+		var classes = localEval($e.attr(CLASS), scopes, localScope);
+		if (classes == null || !(classes.length)) {
+			throw new Error(CLASS + "is not array.");
+		}
+		var bool = classes[0];
+		for (var i=1; i<classes.length; i++) {
+			$e.toggleClass(classes[i], bool);
+		}
+	};
+	REPLACE_DRIVER[ARGS] = function ($e, scopes, localScope){
+		$e.attr(VALS,localEval($e.attr(ARGS), scopes, localScope));
+	};
+
 	/**
 	 * The preservation of the outside template.
 	 * Key is url, Value is {q:[], node: $(DOM fragment)}.
@@ -63,7 +111,15 @@
 	 * @see exTemplate()
 	 */
 	var exTemplates = {};
+	
+	
+	//-------------------------------------------------------------------------
+	// Initialize.
+	//-------------------------------------------------------------------------
 
+	/**
+	 * 'mobileinit' event action.
+	 */
 	function mobileinit(){
 		// nop.
 		//init(document.body);
@@ -86,7 +142,7 @@
 		}).live('pageshow', function(ev) {
 			doScopes(ev, $(ev.target), onShow);
 		}).live('pagebeforehide', function(ev) {
-			doScopes(ev, $(ev.target), onBeforeHide, processPage);
+			doScopes(ev, $(ev.target), onBeforeHide);
 		}).live('pagehide', function(ev) {
 			doScopes(ev, $(ev.target), onHide);
 		}).live('pagebeforecreate', function(ev) {
@@ -94,7 +150,7 @@
 		}).each(function(){
 			var $page = $(this);
 			if ($page.attr(SCOPE) == null) {
-				$page.attr(SCOPE,"({})"); // Page is scope
+				$page.attr(SCOPE,"({})"); // Page is default scope.
 			}
 		})
 		;
@@ -114,7 +170,7 @@
 			$elem.find(XP_SCOPE).each(function(){
 				hander(ev, $(this));
 			});
-			if (afterHander) afterHander($elem, ev);
+			if (afterHander) afterHander($elem);
 		} catch(e) {
 			// Because JQM stops when I throw an exception.
 			console.error(e.stack);
@@ -157,12 +213,12 @@
 	function onBeforeHide(ev, $elem) {onOther(ev, $elem, "onBeforeHide");}
 	function onHide(ev, $elem) {onOther(ev, $elem, "onHide");}
 
+	//-------------------------------------------------------------------------
+	// Processing data-dp-* attributes.
+	//-------------------------------------------------------------------------
 
 	/**
 	 * Dynamic page attributes processes all scopes of the descendant of the page.
-	 * The range of the descendant is removed from the DOM tree temporarily.
-	 * After having handled it independently, each scope is put back.
-	 * TODO: This implementation is not stylish.
 	 * @param $page Page jQuery object.
 	 */
 	function processPage($page) {
@@ -170,181 +226,79 @@
 			console.error("JQMDP processing Page is null? ignore.");
 			return;
 		}
+
+		// --- inner functions. ---
+		function _makeStack($e) {
+			var node = $e[0];
+			var stack = [];
+			while (node != null && node !== document && node !== window) {
+				if (node.jqmdp_scope !== undefined) {
+					stack.push(node.jqmdp_scope);
+				}
+				node = node.parentNode;
+			}
+			return stack;
+		};
+		function _initScope($e) {
+			var attrs = {};
+			for (var key in DP_ATTRS) attrs[key] = [];
+			return {elem:$e[0], $elem:$e, stack:_makeStack($e), attrs:attrs};
+		};
+		function _findScope(scopes, node) {
+			for (var i=0; i<scopes.length; i++) {
+				if (scopes[i].elem == node) return scopes[i];
+			}
+			return scopes[0];
+		};
+		//--- ---
+
+
 		preProcess($page);
 
-		// Take off and backup scope elements.
-		var pageAttrs = {};
-		var pageScopeStack = getScopeStack(getAncestor($page));
+		// init subscopes in page.
+		var scopes = [];
+		scopes.push(_initScope($page));
+		$page.find(XP_SCOPE).each(function(){
+			scopes.push(_initScope($(this)));
+		});
 
-		var $locals = $page.find(XP_SCOPE);
-		var scopeAttrs = new Array($locals.length);
-		var scopeStacks = new Array($locals.length);
-		
-		for (var i=0; i<$locals.length; i++) {
-			scopeAttrs[i] = {};
-			var roots = getAncestor($($locals[i]));
-			scopeStacks[i] = getScopeStack(roots);
-		};
-
+		// data-dp-* attribute is allotted to a subscope.
 		for (var key in DP_ATTRS) {
-			for (var i=0; i<scopeAttrs.length; i++) {
-				scopeAttrs[i][key] = [];
-			};
-			if (pageAttrs[key] === undefined) pageAttrs[key] = [];
-			
 			$page.find(DP_ATTRS[key].xpath).each(function(){
 				var $e = $(this);
-				var idx = indexOf($locals, getScopeNode($e)[0]);
-				if (idx >= 0){
-					scopeAttrs[idx][key].push($e[0]);
-				} else {
-					pageAttrs[key].push($e[0]);
-				}
+				var scope = _findScope(scopes, getScopeNode($e)[0]);
+				scope.attrs[key].push($e);
 			});
 		}
 
-		// Processing DynamicPage attributs.
-		try {
-			process($page, pageAttrs, pageScopeStack);
-			for (var i = 0; i < $locals.length; i++) {
-				process($($locals[i]), scopeAttrs[i], scopeStacks[i]);
-			}
-		} catch (e) {
-			console.error(e.stack);
-			alert(e.stack);
+		// Processing attributes every subscope.
+		for (var i=0; i<scopes.length; i++) {
+			process(scopes[i].$elem, scopes[i].attrs, scopes[i].stack);
 		}
 	}
-	function indexOf($locals, node) {
-		for (var i=0; i<$locals.length; i++) {
-			if ($locals[i] == node) return i;
-		}
-		return -1;
-	}
-
-	function getAncestor($elem) {
-		//return $elem.parents("*[data-dp-scope]");
-
-		var node = $elem[0];
-		var roots = [];
-		while (node != null && node != window) {
-			if (node.jqmdp_scope !== undefined) {
-				roots.push(node);
-			}
-			node = node.parentNode;
-		}
-		return roots;
-	}
-	
-	function getScopeStack(roots, attrs) {
-		var stack = [];
-		for (var i=0; i<roots.length; i++) {
-			if (roots[i].jqmdp_scope) {
-				stack.push(roots[i].jqmdp_scope);
-			}
-			/*
-			var names = $(roots[i]).find(XP_DP_ID);
-			if (names.length > 0) {
-				var nameScope = {};
-				names.each(function(){
-					var $e = $(this);
-					nameScope[$e.attr(DP_ID)] = $e;
-				});
-				stack.push(nameScope);
-			}
-			*/
-		};
-		return stack;
-	}
-
-	function getAttrs($elem) {
-		// Predisposal to handle health of "if" and "for".
-		preProcess($elem);
-
-		// Various substituted processing.
-		var attrs = {};
-		for (var key in DP_ATTRS) {
-			attrs[key] = $elem.find(DP_ATTRS[key].xpath);
-		}
-		return attrs;
-	}
-	
-	var replaceDriver = {}
-	replaceDriver[SHOW] = function (scopes, localScope){
-		var $e = localScope.$this = $(this);
-		var bool = localEval($e.attr(SHOW), scopes, localScope);
-		bool ? $e.show() : $e.hide();
-	};
-	replaceDriver[SRC] = function (scopes, localScope){
-		var $e = localScope.$this = $(this);
-		$e.attr("src",localEval($e.attr(SRC), scopes, localScope));
-	};
-	replaceDriver[HREF] = function (scopes, localScope){
-		var $e = localScope.$this = $(this);
-		$e.attr("href",localEval($e.attr(HREF), scopes, localScope));
-	};
-	replaceDriver[VALUE] = function (scopes, localScope){
-		var $e = localScope.$this = $(this);
-		$e.val(localEval($e.attr(VALUE), scopes, localScope));
-	};
-	replaceDriver[CHECKED] = function (scopes, localScope){
-		var $e = localScope.$this = $(this);
-		var bool = localEval($e.attr(CHECKED), scopes, localScope);
-		$e.attr('checked', bool);
-		if ($e.data("checkboxradio")) $e.checkboxradio('refresh');
-	};
-	replaceDriver[TEXT] = function (scopes, localScope){
-		var $e = localScope.$this = $(this);
-		$e.text(""+localEval($e.attr(TEXT), scopes, localScope));
-	};
-	replaceDriver[HTML] = function (scopes, localScope){
-		var $e = localScope.$this = $(this);
-		$e.html(localEval($e.attr(HTML), scopes, localScope));
-	};
-	replaceDriver[TEMPLATE] = function (scopes, localScope){
-		var $e = localScope.$this = $(this);
-		template($e, $e.attr(TEMPLATE));
-	};
-	replaceDriver[CLASS] = function (scopes, localScope){
-		var $e = localScope.$this = $(this);
-		var classes = localEval($e.attr(CLASS), scopes, localScope);
-		if (classes == null || !(classes.length)) {
-			throw new Error(CLASS + "is not array.");
-		}
-		var bool = classes[0];
-		for (var i=1; i<classes.length; i++) {
-			$e.toggleClass(classes[i], bool);
-		}
-	};
-	replaceDriver[ARGS] = function (scopes, localScope){
-		var $e = localScope.$this = $(this);
-		$e.attr(VALS, localEval($e.attr(ARGS), scopes, localScope));
-	};
-
 
 	/**
 	 * DynamicPage attributes processing in one scope.
-	 * 
-	 * 
-	 * 
 	 * @param $elem Page or scope element jQuery object.
+	 * @param attrs Array of element with data-dp-* attribute.
 	 * @param scopes scope instance array.
 	 */
 	function process($elem, attrs, scopes) {
-		//console.log("process:"+$elem+"|"+attrs+"|"+scopes);
-
 		var localScope = {};
 		// Control sentence structure processing.
-		processCond($elem, attrs[IF], "if", IF, scopes, localScope);
-		processCond($elem, attrs[IFSELF], "if", IFSELF, scopes, localScope);
-		processCond($elem, attrs[FOR], "for", FOR, scopes, localScope);
+		processCond($elem, attrs[IF],     "if",  IF,     scopes, localScope);
+		processCond($elem, attrs[IFSELF], "if",  IFSELF, scopes, localScope);
+		processCond($elem, attrs[FOR],    "for", FOR,    scopes, localScope);
 
 		// Various substituted processing.
-		for (var key in replaceDriver) {
+		for (var key in REPLACE_DRIVER) {
 			for (var i=0; i<attrs[key].length; i++) {
-				replaceDriver[key].call(attrs[key][i], scopes, localScope);
+				localScope.$this = attrs[key][i];
+				REPLACE_DRIVER[key](localScope.$this, scopes, localScope);
 			};
 			if ($elem.attr(key)) {
-				replaceDriver[key].call($elem[0], scopes, localScope);
+				localScope.$this = $elem;
+				REPLACE_DRIVER[key]($elem, scopes, localScope);
 			}
 		}
 		
@@ -362,38 +316,48 @@
 	 * @param xpath     XPath to search an attribute.
 	 * @param cmd       Control sentence token "if" or "for".
 	 * @param attr		Attribute name.
-	 * @param scope     scope instance.
+	 * @param scopes    scopes stack.
+	 * @param localScope  The most recent scope.
 	 */
-	function processCond(_$parent, _attrs, _cmd, _attr, _scopes, _localScope) {
-		function _driver(){
-			var $this = $(this);
-			_localScope.$this = $this;
-			var _$body = this.jqmdp_body;
-			if (isDebug) console.log(_cmd+"-body="+(_$body ? _$body.html() : "null"));
+	function processCond($parent, attrs, cmd, attr, scopes, localScope) {
+		// --- inner functions ---
+		function _driver($this){
+			var $body = $this[0].jqmdp_body;
+			if (isDebug) console.log(cmd+"-body="+($body ? $body.html() : "null"));
+			localScope.$this = $this;
+			localScope.__$body = $body;
+			localScope.__scopes = scopes;
 
-			$this.html("");
-			var _script = _cmd+$this.attr(_attr)+"{"
-				+"_processClone($this, _$body, _scopes);"
-				+"}"
-			;
-			if (_attr == IFSELF) {
-				_script += "else {$this.remove();}";
-			}
-			if (isDebug) console.log("cond-Eval:"+_script);
-			try {
-				eval(wrapScopes(_script, _scopes, _localScope));
-			} catch (e) {
-				e.message = "eval: "+_script+"\n\n"+e.message;
-				throw e;
-			}
+			var script = 
+				cmd+$this.attr(attr)+"{_processClone($this, __$body, __scopes);}"
+			if (attr == IFSELF) script += "else {$this.remove();}";
+
+			localEval(script, scopes, localScope);
 			_markup($this);
 		}
-		if (_attrs == null) debugger; 
-		for (var i = 0; i < _attrs.length; i++) {
-			_driver.call(_attrs[i]);
+		/**
+		 * JQM Element refresh.
+		 * It is necessary to handle JQM by manual refresh() for a dynamic change.
+		 * @param {jQuery} $elem
+		 */
+		function _markup($elem) {
+			// Only document descended.
+			// DOM falgment is processing $.mobile.page() in _processClone().
+			for (var e=$elem[0]; e != null && e != document; e=e.parentNode);
+			if (e == null) return;
+	
+			// TODO: other no-role of listing widget.
+			var role = $elem.jqmData("role");
+			var widget = role ? $elem.jqmData(role) : $elem.jqmData("selectmenu");
+			if (widget && widget.refresh) widget.refresh(true);
 		}
-		if (_$parent.attr(_attr)) {
-			_driver.call(_$parent[0]);
+		// --- ---
+	
+		for (var i = 0; i < attrs.length; i++) {
+			_driver(attrs[i]);
+		}
+		if ($parent.attr(attr)) {
+			_driver($parent);
 		}
 	}
 
@@ -403,37 +367,67 @@
 	 * 
 	 * @param $elem   scope element jQuery object.
 	 * @param $body   Stored Control sentence.
-	 * @param scopes   scope instance array.
+	 * @param scopes   scope stack array.
 	 */
 	function _processClone($elem, $body, scopes) {
 		var $clone = $body.clone();
-		var attrs = getAttrs($clone);
+		var attrs = _getAttrs($clone);
 		process($clone, attrs, scopes);
 		$clone.jqmData("theme", $.mobile.getInheritedTheme($elem, "c"));
 		$clone.page();
 		$elem.append($clone.contents());
 	}
-	function _markup($elem) {
-		var e = $elem[0];
-		while (e != document) {
-			if ((e=e.parentNode) == null) return;
+	function _getAttrs($elem) {
+		preProcess($elem);
+		var attrs = {};
+		for (var key in DP_ATTRS) {
+			attrs[key] = [];
+			$elem.find(DP_ATTRS[key].xpath).each(function(){
+				attrs[key].push($(this))
+			});
 		}
-
-		var role, widget
-		if (role=$elem.jqmData("role")) {
-			widget = $elem.jqmData(role);
-		} else {
-			// TODO: other no-role of listing widget.
-			widget = $elem.jqmData("selectmenu");
+		return attrs;
+	}
+	/**
+	 * The predisposal of the control sentence structure.
+	 * if and for suppot.
+	 * @param $elem   scope element jQuery object.
+	 */
+	function preProcess($elem){
+		_preProcess0($elem, FOR);
+		_preProcess0($elem, IF);
+		_preProcess0($elem, IFSELF);
+		return $elem;
+	}
+	
+	/**
+	 * The predisposal of the control sentence structure.
+	 * Subroutine.
+	 * It is cut, and the body is stored.
+	 * The control sentence structure will have an empty body.
+	 * @param $elem   scope element jQuery object.
+	 * @param xpath   XPath to search an attribute.
+	 */
+	function _preProcess0($elem, attr) {
+		function setBody() {
+			if (this.jqmdp_body === undefined) {
+				this.jqmdp_body = $("<div></div>");
+				this.jqmdp_body.append($(this).contents().clone());
+				if (isDebug) console.log("save body="+this.jqmdp_body.html());
+			}
 		}
-		if (widget && widget.refresh) widget.refresh(true);
+		
+		if ($elem.attr(attr)) setBody.call($elem[0]);
+		$elem.find(DP_ATTRS[attr].xpath).each(setBody).html("");
+		if ($elem.attr(attr)) $elem[0].html("");
 	}
 
 	/**
 	 * JavaScript character string is execute in scope instance.
 	 * 
 	 * @param _script  javascript code string.
-	 * @param _scopes  scope instance array.
+	 * @param _scopes  scope stack array.
+	 * @param _localScope  The most recent scope.
 	 * @return result value of javascript code.
 	 */
 	function localEval(_script, _scopes, _localScope){
@@ -446,18 +440,14 @@
 					_res = eval(_script);
 				}
 			} else if (_scopes.length == 1) {
-				with (_scopes[0]) {
-					with (_localScope) {
-						_res = eval(_script);
-					}
-				}
+				with (_scopes[0]) {	with (_localScope) {
+					_res = eval(_script);
+				}}
 			} else {
-				if (isDebug) console.log("localEval:::"+_script);
 				_res = eval(wrapScopes(_script, _scopes, _localScope));
 			}
 			if (isDebug) console.log("localEval=" + _res);
 			return _res;
-
 		} catch (e) {
 			e.message = "eval: "+_script+"\n\n"+e.message;
 			throw e;
@@ -465,9 +455,10 @@
 	}
 	
 	/**
-	 * Wrapping scopes javascript code.
+	 * Wrapping scope stack javascript code.
 	 * @param script  javascript code string.
 	 * @param scopes  scope instance array.
+	 * @param _localScope  The most recent scope.
 	 * @return result Wrapping scopes javascript code.
 	 */
 	function wrapScopes(script, scopes, _localScope) {
@@ -481,46 +472,11 @@
 		return script;	
 	}
 	
-	/**
-	 * The predisposal of the control sentence structure.
-	 * if and for suppot.
-	 * @param $elem   scope element jQuery object.
-	 */
-	function preProcess($elem){
-		preProcess0($elem, FOR);
-		preProcess0($elem, IF);
-		preProcess0($elem, IFSELF);
-		return $elem;
-	}
 	
-	/**
-	 * The predisposal of the control sentence structure.
-	 * Subroutine.
-	 * It is cut, and the body is stored.
-	 * The control sentence structure will have an empty body.
-	 * @param $elem   scope element jQuery object.
-	 * @param xpath   XPath to search an attribute.
-	 */
-	function preProcess0($elem, attr) {
-		function setBody() {
-			if (this.jqmdp_body === undefined) {
-				this.jqmdp_body = $("<div></div>");
-				this.jqmdp_body.append($(this).contents().clone());
-				if (isDebug) console.log("save body="+this.jqmdp_body.html());
-			}
-		}
-		
-		if ($elem.attr(attr)) {
-			setBody.call($elem[0]);
-		}
-		$elem.find(DP_ATTRS[attr].xpath).each(setBody);
-		$elem.find(DP_ATTRS[attr].xpath).html("");
-		if ($elem.attr(attr)) {
-			$elem[0].html("");
-		}
-		
-	}
-	
+	//-------------------------------------------------------------------------
+	// API & Util.
+	//-------------------------------------------------------------------------
+
 	/**
 	 * Ancestors element having the nearest scope is returned.
 	 * @param elem   Any element or jQuery object.
@@ -660,7 +616,7 @@
 	
 	/**
 	 * Handling JQM attribute.
-	 * Note: use the unofficial JQM function.
+	 * Note: It causes malfunction of JQM to use the purge of DOM.
 	 * @param $this  target jQuery object.
 	 */
 	function markup($this, purge) {
@@ -719,6 +675,7 @@
 	
 	//-------------------------------------------------------------------------
 	// Exports functions.
+	//-------------------------------------------------------------------------
 	/**
 	 * A bridge function.
 	 * Extends JQMDP functions for $this.
@@ -776,7 +733,8 @@
 	});
 
 	//------------------------------------------------------------------------
-	// bootup.
+	// Bootup.
+	//------------------------------------------------------------------------
 	// TODO: $(document).bind("mobileinit", function(){init(document.body);});
 	if ($.mobile != null) alert("You must load 'jqmdp' before than 'jQuery mobile'.");
 	$(function(){init(document.body);});
