@@ -12,10 +12,16 @@
 
 (function($) {
 	//-------------------------------------------------------------------------
-	// Static variables.
+	// Degbus.
 	//-------------------------------------------------------------------------
 	var isDebug = false;
-
+	if (undefined === window.console) {
+		window.console = {log:function(){}, error:function(){}}; 
+	}
+	
+	//-------------------------------------------------------------------------
+	// Static variables.
+	//-------------------------------------------------------------------------
 	var PRE = "data-dp-";
 	
 	var SCOPE = PRE+"scope";
@@ -174,7 +180,7 @@
 		} catch(e) {
 			// Because JQM stops when I throw an exception.
 			console.error(e.stack);
-			alert(e.stack);
+			alert(e.message+"\n"+e.stack);
 		}
 	}
 
