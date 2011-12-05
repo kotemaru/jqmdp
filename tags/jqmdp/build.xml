@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project basedir="." default="release" name="jqmdp">
+	<property name="version" value="1.0b2"/>
+	
+	<property name="work" value="${basedir}/work"/>
+	<property name="packname" value="jquery.mobile.jqmdp-${version}"/>
+	<property name="zipfile" value="${work}/${packname}.zip"/>
+	<property name="src" value="${basedir}/war"/>
+
+    <target name="release">
+ 		<mkdir dir="${work}" />
+		<zip destfile="${zipfile}">
+			<zipfileset dir="${src}" prefix="${packname}">
+				<include name="demos/**" />
+				<include name="js/**" />
+				<include name="readme.txt" />
+			</zipfileset>
+		</zip>
+	</target>
+</project>
