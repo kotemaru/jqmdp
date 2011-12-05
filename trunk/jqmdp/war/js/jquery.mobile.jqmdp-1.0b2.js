@@ -605,7 +605,16 @@
 	function exTemplate($this, url, callback) {
 		if (exTemplates[url] === undefined) {
 			exTemplates[url] = {q:[{$this:$this, callback:callback}]};
-			$.get(url, null, function(data){_onLoadTempl(data,url);});
+			$.ajax({
+				url:url, cache:false, dataType:"text",
+				success: function(data){_onLoadTempl(data,url);},
+				error: function(xreq,stat,err) {
+					var msg = (location.protocol == "file:")
+						? "\nYour browser does not support LocalFile XHR."
+						  +"\n'localfile Access-Control-Allow-Origin' on Google :-P" : "";
+					alert("Template load error:"+err+" "+url+msg);
+				}
+			});
 		} else if (exTemplates[url].node === undefined) {
 			exTemplates[url].q.push({$this:$this, callback:callback});
 		} else {
