@@ -29,6 +29,15 @@
 		obj[key] = val;
 		return obj;
 	}
+	if(! Array.indexOf) {
+		Array.prototype.indexOf = function(o) {
+			for(var i=0; i<this.length; i++) {
+				if(this[i] == o) return i;
+			}
+			return -1;
+		}
+  	}
+
 
 	//-------------------------------------------------------------------------
 	// Static variables.
@@ -193,6 +202,7 @@
 			// Because JQM stops when I throw an exception.
 			console.error(e.stack);
 			alert(e.message+"\n"+e.stack);
+			throw e;
 		}
 	}
 
@@ -205,7 +215,7 @@
 	 */
 	function initScope(ev, $elem) {
 		var scope = $elem[0].jqmdp_scope;
-		if (scope !== undefined) return;
+		if (scope != null) return;
 		
 		var scopeSrc = $elem.attr(SCOPE);
 		if (scopeSrc != null) {
@@ -249,7 +259,7 @@
 		function _makeStack($e) {
 			var node = $e[0];
 			var stack = [];
-			while (node != null && node !== document && node !== window) {
+			while (node != null && node != document && node != window) {
 				if (node.jqmdp_scope != null) {
 					stack.push(node.jqmdp_scope);
 				}
@@ -308,8 +318,7 @@
 		processCond($elem, attrs[IFSELF], "if",  IFSELF, scopes, localScope);
 		processCond($elem, attrs[FOR],    "for", FOR,    scopes, localScope);
 
-		// Various substituted processing.
-		for (var key in REPLACE_DRIVER) {
+		function _drive(key) {
 			for (var i=0; i<attrs[key].length; i++) {
 				localScope.$this = attrs[key][i];
 				REPLACE_DRIVER[key](localScope.$this, scopes, localScope);
@@ -319,6 +328,11 @@
 				REPLACE_DRIVER[key]($elem, scopes, localScope);
 			}
 		}
+
+
+		// Various substituted processing.
+		_drive(ARGS);
+		for (var key in REPLACE_DRIVER) _drive(key);
 		
 		return $elem;
 	}
@@ -428,7 +442,7 @@
 	 */
 	function _preProcess0($elem, attr) {
 		function setBody() {
-			if (this.jqmdp_body === undefined) {
+			if (this.jqmdp_body == null) {
 				this.jqmdp_body = $("<div></div>");
 				this.jqmdp_body.append($(this).contents().clone());
 				if (isDebug) console.log("save body="+this.jqmdp_body.html());
@@ -547,15 +561,20 @@
 	 */
 	function scope($this, val) {
 		var $scopeNode = getScopeNode($this);
-		if ($scopeNode == null) return null;
+		if ($scopeNode == null) {
+			throw new Error("Not found scope." + $this);
+		}
 		if (val) {
 			$scopeNode[0].jqmdp_scope = val;
 			return $this;
 		} else {
-			if (undefined === $scopeNode[0].jqmdp_scope) {
+			if (null == $scopeNode[0].jqmdp_scope) {
 				doScopes(null, $this, initScope);
 			}
-			return $scopeNode[0].jqmdp_scope;
+			if ($scopeNode.length > 0 && $scopeNode[0].jqmdp_scope) {
+				return $scopeNode[0].jqmdp_scope
+			}
+			throw new Error("Not found scope."+$this);
 		}
 	}
 
@@ -574,7 +593,7 @@
 	 * @param src    Template jQuery object or url string.
 	 */
 	function template($this, src, callback) {
-		if ( typeof src === "string") {
+		if ( typeof src == "string") {
 			if (src.indexOf("#") == 0) {
 				_template($this, $(src), callback);
 			} else {
@@ -590,6 +609,10 @@
 		$clone.page();
 		$this.html("");
 		$this.append($clone.contents());
+		//var xxx = $this.contents();
+		//xxx.each(function(){
+		//	console.log(this.parentNode == $this[0]);
+		//});
 		if (callback) {
 			setTimeout(function(){callback($this, $src);}, 5);
 		}
@@ -603,7 +626,7 @@
 	 * @param url    outside template url.
 	 */
 	function exTemplate($this, url, callback) {
-		if (exTemplates[url] === undefined) {
+		if (exTemplates[url] == null) {
 			exTemplates[url] = {q:[{$this:$this, callback:callback}]};
 			$.ajax({
 				url:url, cache:false, dataType:"text",
@@ -615,7 +638,7 @@
 					alert("Template load error:"+err+" "+url+msg);
 				}
 			});
-		} else if (exTemplates[url].node === undefined) {
+		} else if (exTemplates[url].node == null) {
 			exTemplates[url].q.push({$this:$this, callback:callback});
 		} else {
 			_template($this, exTemplates[url].node, callback);
@@ -715,9 +738,9 @@
 	 * @return Extends jQuery object.
 	 */
 	function export_jqmdp($this, dpId){
-		if ($this === undefined)  throw new Error(NULL_OBJ_ERROR);
+		if ($this == null)  throw new Error(NULL_OBJ_ERROR);
 		if (!($this instanceof jQuery)) $this = $($this);
-		if ($this[0] === window) throw new Error(WINDOW_OBJ_ERROR);
+		if ($this[0] == window) throw new Error(WINDOW_OBJ_ERROR);
 		var $e = (dpId == null) ? $this : byId($this, dpId);
 		if ($e == null) return null;
 		return $.extend($e, jqmdp_fn);
@@ -744,9 +767,9 @@
 	 * @return scope instance. 
 	 */
 	function export_scope($this, dpId, val) {
-		if ($this === undefined)  throw new Error(NULL_OBJ_ERROR);
+		if ($this == null)  throw new Error(NULL_OBJ_ERROR);
 		if (!($this instanceof jQuery)) $this = $($this);
-		if ($this[0] === window) throw new Error(WINDOW_OBJ_ERROR);
+		if ($this[0] == window) throw new Error(WINDOW_OBJ_ERROR);
 		var $e = (dpId == null) ? $this : byId($this, dpId);
 		return scope($e, val);
 	}
