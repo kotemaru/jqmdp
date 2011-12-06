@@ -1,11 +1,12 @@
 /**
  * Google Map basic style.
  */
-(function(){
-	var Package = window;
-	var Class = function Map(){this.initialize.apply(this, arguments)};
+function Map(){this.initialize.apply(this, arguments)};
+(function(Class){
+	//var Package = window;
+	//var Class = function Map(){this.initialize.apply(this, arguments)};
 	var This = Class.prototype;
-	Package[Class.name] = Class;
+	//Package[Class.name] = Class;
 
 	var LatLng = google.maps.LatLng;
 
@@ -102,4 +103,4 @@
 	}
 	
 	
-})();
+})(Map);

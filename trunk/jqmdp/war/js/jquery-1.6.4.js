@@ -1016,7 +1016,7 @@ jQuery.extend({
 								callbacks.shift().apply( context, args );
 							}
 						}
-						catch (pseudoError) {} finally {
+						catch (e) {throw e;} finally {
 							fired = [ context, args ];
 							firing = 0;
 						}
@@ -4576,12 +4576,15 @@ var Expr = Sizzle.selectors = {
 		},
 
 		ATTR: function( elem, match ) {
-			var name = match[1],
+
+try { // inou
+				var name = match[1],
 				result = Expr.attrHandle[ name ] ?
 					Expr.attrHandle[ name ]( elem ) :
 					elem[ name ] != null ?
 						elem[ name ] :
-						elem.getAttribute( name ),
+						//elem.getAttribute, // inou
+						(elem.getAttribute ? elem.getAttribute( name ):null),
 				value = result + "",
 				type = match[2],
 				check = match[4];
@@ -4605,6 +4608,12 @@ var Expr = Sizzle.selectors = {
 				type === "|=" ?
 				value === check || value.substr(0, check.length + 1) === check + "-" :
 				false;
+
+} catch (e) {
+	console.log(e);
+}
+
+
 		},
 
 		POS: function( elem, match, i, array ) {

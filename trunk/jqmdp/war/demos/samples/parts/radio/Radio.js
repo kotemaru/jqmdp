@@ -2,11 +2,12 @@
  * Radio/Selector Plugin.
  * Todo: document.
   */
-(function(){
-	var Package = window;
-	var Class = function Radio(){this.initialize.apply(this, arguments)};
+function Radio(){this.initialize.apply(this, arguments)};
+(function(Class){
+	//var Package = window;
+	//var Class = function Radio(){this.initialize.apply(this, arguments)};
 	var This = Class.prototype;
-	Package[Class.name] = Class;
+	//Package[Class.name] = Class;
 
 	var XP_DP_ARGS = "a[data-dp-args]";
 	var OPTS = {
@@ -57,6 +58,8 @@
 
 	This.isActive = function($a){
 		var v = $a.jqmdp().args();
+		if (v == null) return false; // TODO: args()より先にくる事が有る。
+		//if (!(this.values.indexOf)) return false;
 		return (this.values.indexOf(v)>=0);
 	}
 
@@ -85,4 +88,4 @@
 	This.getValues = function() {
 		return this.values;
 	}
-})();
+})(Radio);

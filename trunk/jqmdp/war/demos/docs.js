@@ -11,6 +11,8 @@ Docs.trimHtml = function(str) {
 		.replace(/(on[a-z]+="[^"]*[$][.]jqmdp[.(][^"]*")/g,"<b>$1</b>")
 		.replace(/(on[a-z]+="[^"]*[$][.]scope[.(][^"]*")/g,"<b>$1</b>")
 		.replace(/&lt;!--(.*)-->/g,"&lt;!--<i>$1</i>-->")
+		.replace(/\n/gm,"<br/>")
+		.replace(/[ ]/g,"&nbsp;")
 	;
 }
 
@@ -18,6 +20,8 @@ Docs.trimJs = function(str) {
 	return str.replace(/\t/g,"  ")
 		.replace(/\/\/(.*)$/mg,"//<i>$1</i>")
 		.replace(/\/\*\/?(([\r\n]|[^\/]|[^*]\/)*)\*\//mg,"/*<i>$1</i>*/")
+		.replace(/\n/gm,"<br/>")
+		.replace(/[ ]/g,"&nbsp;")
 	;
 }
 

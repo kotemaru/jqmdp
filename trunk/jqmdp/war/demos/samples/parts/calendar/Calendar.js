@@ -2,11 +2,12 @@
  * カレンダー部品
  * TODO: document.
  */
-(function(){
-	var Package = window;
-	var Class = function Calendar(){this.initialize.apply(this, arguments)};
+function Calendar(){this.initialize.apply(this, arguments)};
+(function(Class){
+	//var Package = window;
+	//var Class = function Calendar(){this.initialize.apply(this, arguments)};
 	var This = Class.prototype;
-	Package[Class.name] = Class;
+	//Package[Class.name] = Class;
 	
 	var TEMPL      = $.jqmdp.absPath("Calendar.html");
 	var CL_BASE    = "dp-calendar";
@@ -110,4 +111,4 @@
 		if (this.opts.dialog) this.close();
 	}
 
-})();
+})(Calendar);
