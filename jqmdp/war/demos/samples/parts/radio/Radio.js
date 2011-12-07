@@ -58,8 +58,6 @@ function Radio(){this.initialize.apply(this, arguments)};
 
 	This.isActive = function($a){
 		var v = $a.jqmdp().args();
-		if (v == null) return false; // TODO: args()より先にくる事が有る。
-		//if (!(this.values.indexOf)) return false;
 		return (this.values.indexOf(v)>=0);
 	}
 

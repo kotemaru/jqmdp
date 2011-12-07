@@ -10,7 +10,9 @@
  *       I pollute jqmdp_scope and jqmdp_body of HTMLElement.
  */
 
-(function($) {
+// TODO: template bug.
+
+(function($, undefined) {
 	//-------------------------------------------------------------------------
 	// Degbus.
 	//-------------------------------------------------------------------------
@@ -37,6 +39,19 @@
 			return -1;
 		}
   	}
+
+	if ($.browser.msie) {
+		var org_ATTR = $.expr.filter.ATTR;
+		$.expr.filter.ATTR = function(elem, match) {
+			try {
+				return org_ATTR(elem, match);
+			} catch (e) {
+				console.error(e);
+			}
+			return false;
+		}
+	}
+
 
 
 	//-------------------------------------------------------------------------
@@ -276,7 +291,7 @@
 			for (var i=0; i<scopes.length; i++) {
 				if (scopes[i].elem == node) return scopes[i];
 			}
-			return scopes[0];
+			return null;
 		};
 		//--- ---
 
@@ -295,7 +310,11 @@
 			$page.find(DP_ATTRS[key].xpath).each(function(){
 				var $e = $(this);
 				var scope = _findScope(scopes, getScopeNode($e)[0]);
-				scope.attrs[key].push($e);
+				if (scope == null) {
+					console.error("No scope "+$e);
+				} else {
+					scope.attrs[key].push($e);
+				}
 			});
 		}
 
@@ -321,6 +340,11 @@
 		function _drive(key) {
 			for (var i=0; i<attrs[key].length; i++) {
 				localScope.$this = attrs[key][i];
+				// TODO: 親ノードが消える。
+				//if ($.browser.msie && getScopeNode(localScope.$this) == null) {
+				//	console.error("Not found scope. IE bug?");
+				//	continue;
+				//} 
 				REPLACE_DRIVER[key](localScope.$this, scopes, localScope);
 			};
 			if ($elem.attr(key)) {
@@ -609,10 +633,6 @@
 		$clone.page();
 		$this.html("");
 		$this.append($clone.contents());
-		//var xxx = $this.contents();
-		//xxx.each(function(){
-		//	console.log(this.parentNode == $this[0]);
-		//});
 		if (callback) {
 			setTimeout(function(){callback($this, $src);}, 5);
 		}
@@ -626,7 +646,7 @@
 	 * @param url    outside template url.
 	 */
 	function exTemplate($this, url, callback) {
-		if (exTemplates[url] == null) {
+		if (exTemplates[url] === undefined) {
 			exTemplates[url] = {q:[{$this:$this, callback:callback}]};
 			$.ajax({
 				url:url, cache:false, dataType:"text",
@@ -638,7 +658,7 @@
 					alert("Template load error:"+err+" "+url+msg);
 				}
 			});
-		} else if (exTemplates[url].node == null) {
+		} else if (exTemplates[url].node === undefined) {
 			exTemplates[url].q.push({$this:$this, callback:callback});
 		} else {
 			_template($this, exTemplates[url].node, callback);
