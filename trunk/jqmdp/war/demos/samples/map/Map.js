@@ -62,7 +62,7 @@ function Map(){this.initialize.apply(this, arguments)};
 	 * It is size that deducted a header from size of windiw.
 	 */
 	This.updateSize = function() {
-		var h = window.innerHeight;
+		var h = $(window).height();
 		var h1 = this.$page.find("div[data-role='header']").height();
 		this.$canvas.height(h - h1);
 	}

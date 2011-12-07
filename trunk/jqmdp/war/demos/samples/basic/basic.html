@@ -18,7 +18,7 @@
 	
 	<script src="basic.js"></script>
 	<script>
-		$.jqmdp.debug(true);
+		$.jqmdp.debug(false);
 	</script>
 </head>
 <body >
@@ -33,7 +33,7 @@
 			<a href="#" data-icon="plus" onclick="$.scope(this).newUser()"
 				data-iconpos="left">New</a>
 		</div>
-		<div data-role="content" " >
+		<div data-role="content" >
 			<!-- ユーザ人数分のループを行ってリストを合成している。-->
 			<!-- data-dp-for|text は $.scope(this) スコープで実行されるので $.scope(this) は省略可能。-->
 			<ul	data-role="listview"

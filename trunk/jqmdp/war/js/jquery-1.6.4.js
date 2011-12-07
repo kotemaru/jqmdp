@@ -13,6 +13,7 @@
  *
  * Date: Mon Sep 12 18:54:48 2011 -0400
  */
+
 (function( window, undefined ) {
 
 // Use the correct document accordingly with window argument (sandbox)
@@ -1016,7 +1017,7 @@ jQuery.extend({
 								callbacks.shift().apply( context, args );
 							}
 						}
-						catch (e) {throw e;} finally {
+						finally {
 							fired = [ context, args ];
 							firing = 0;
 						}
@@ -4576,15 +4577,12 @@ var Expr = Sizzle.selectors = {
 		},
 
 		ATTR: function( elem, match ) {
-
-try { // inou
-				var name = match[1],
+			var name = match[1],
 				result = Expr.attrHandle[ name ] ?
 					Expr.attrHandle[ name ]( elem ) :
 					elem[ name ] != null ?
 						elem[ name ] :
-						//elem.getAttribute, // inou
-						(elem.getAttribute ? elem.getAttribute( name ):null),
+						elem.getAttribute( name ),
 				value = result + "",
 				type = match[2],
 				check = match[4];
@@ -4608,12 +4606,6 @@ try { // inou
 				type === "|=" ?
 				value === check || value.substr(0, check.length + 1) === check + "-" :
 				false;
-
-} catch (e) {
-	console.log(e);
-}
-
-
 		},
 
 		POS: function( elem, match, i, array ) {
