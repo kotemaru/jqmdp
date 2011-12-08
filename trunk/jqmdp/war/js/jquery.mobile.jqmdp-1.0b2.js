@@ -10,11 +10,9 @@
  *       I pollute jqmdp_scope and jqmdp_body of HTMLElement.
  */
 
-// TODO: template bug.
-
 (function($, undefined) {
 	//-------------------------------------------------------------------------
-	// Degbus.
+	// Debus.
 	//-------------------------------------------------------------------------
 	var isDebug = false;
 	if (undefined === window.console) {
@@ -40,6 +38,8 @@
 		}
   	}
 
+	// jquery-1.6.4 bug? DispHTMLDocument.getAttribute not found.
+	// catch and return false.
 	if ($.browser.msie) {
 		var org_ATTR = $.expr.filter.ATTR;
 		$.expr.filter.ATTR = function(elem, match) {
@@ -52,8 +52,6 @@
 		}
 	}
 
-
-
 	//-------------------------------------------------------------------------
 	// Static variables.
 	//-------------------------------------------------------------------------
@@ -61,90 +59,83 @@
 	
 	var SCOPE = PRE+"scope";
 	var DP_ID = PRE+"id";
-	var SHOW  = PRE+"show";
-	var SRC   = PRE+"src";
-	var HREF  = PRE+"href";
-	var HTML  = PRE+"html";
-	var TEXT  = PRE+"text";
-	var VALUE = PRE+"value";
-	var CHECKED = PRE+"checked";
 	var TEMPLATE = PRE+"template";
-	var CLASS = PRE+"class";
-	var ARGS = PRE+"args";
+
 	var VALS = PRE+"vals";
 
-	var IF    = PRE+"if";
 	var IFSELF= PRE+"if-self";
-	var FOR   = PRE+"for";
 
-	var XP_SCOPE = "*["+SCOPE+"]";
+	var XP_SCOPE    = "*["+SCOPE+"]";
+	var XP_TEMPLATE = "*["+TEMPLATE+"]";
 
-	/** data-dp-* attributes listing. */
-	var DP_ATTRS = {};
-	DP_ATTRS[SCOPE   ] = {xpath:"*["+SCOPE   +"]"};
-	DP_ATTRS[DP_ID   ] = {xpath:"*["+DP_ID   +"]"};
-	DP_ATTRS[SHOW    ] = {xpath:"*["+SHOW    +"]"};
-	DP_ATTRS[SRC     ] = {xpath:"*["+SRC     +"]"};
-	DP_ATTRS[HREF    ] = {xpath:"*["+HREF    +"]"};
-	DP_ATTRS[HTML    ] = {xpath:"*["+HTML    +"]"};
-	DP_ATTRS[TEXT    ] = {xpath:"*["+TEXT    +"]"};
-	DP_ATTRS[VALUE   ] = {xpath:"*["+VALUE   +"]"};
-	DP_ATTRS[CHECKED ] = {xpath:"*["+CHECKED +"]"};
-	DP_ATTRS[TEMPLATE] = {xpath:"*["+TEMPLATE+"]"};
-	DP_ATTRS[CLASS   ] = {xpath:"*["+CLASS   +"]"};
-	DP_ATTRS[ARGS    ] = {xpath:"*["+ARGS    +"]"};
-	//DP_ATTRS[VALS    ] = {xpath:"*["+VALS    +"]"};
-	
-	DP_ATTRS[IF      ] = {xpath:"*["+IF      +"]"};
-	DP_ATTRS[IFSELF  ] = {xpath:"*["+IFSELF  +"]"};
-	DP_ATTRS[FOR     ] = {xpath:"*["+FOR     +"]"};
 
+	//-------------------------------------------------------------------------
+	// Runtime attributs processors.
+	//-------------------------------------------------------------------------
+	function Replacer(attr,proc) {
+		this.attr = PRE+attr;
+		this.xpath = "*["+PRE+attr+"]";
+		this.proc = proc;
+		if (proc.name == null) proc.name = "Replacer_proc_"+attr;
+	}
+	Replacer.add = function(instance) {
+		REPLACERS.push(instance);
+	}
 
 	/**
 	 * Replace attribute processors.
 	 */
-	var REPLACE_DRIVER = {}
-	REPLACE_DRIVER[SHOW] = function ($e, scopes, localScope){
-		var bool = localEval($e.attr(SHOW), scopes, localScope);
-		bool ? $e.show() : $e.hide();
-	};
-	REPLACE_DRIVER[SRC] = function ($e, scopes, localScope){
-		$e.attr({src: localEval($e.attr(SRC), scopes, localScope)});
-	};
-	REPLACE_DRIVER[HREF] = function ($e, scopes, localScope){
-		$e.attr({href: localEval($e.attr(HREF), scopes, localScope)});
-	};
-	REPLACE_DRIVER[VALUE] = function ($e, scopes, localScope){
-		$e.val(localEval($e.attr(VALUE), scopes, localScope));
-	};
-	REPLACE_DRIVER[CHECKED] = function ($e, scopes, localScope){
-		var bool = localEval($e.attr(CHECKED), scopes, localScope);
-		$e.attr({'checked': bool});
-		if ($e.jqmData("checkboxradio")) $e.checkboxradio('refresh');
-	};
-	REPLACE_DRIVER[TEXT] = function ($e, scopes, localScope){
-		$e.text(""+localEval($e.attr(TEXT), scopes, localScope));
-	};
-	REPLACE_DRIVER[HTML] = function ($e, scopes, localScope){
-		$e.html(localEval($e.attr(HTML), scopes, localScope));
-	};
-	REPLACE_DRIVER[TEMPLATE] = function ($e, scopes, localScope){
-		template($e, $e.attr(TEMPLATE));
-	};
-	REPLACE_DRIVER[CLASS] = function ($e, scopes, localScope){
-		var classes = localEval($e.attr(CLASS), scopes, localScope);
-		if (classes == null || !(classes.length)) {
-			throw new Error(CLASS + "is not array.");
-		}
-		var bool = classes[0];
-		for (var i=1; i<classes.length; i++) {
-			$e.toggleClass(classes[i], bool);
-		}
-	};
-	REPLACE_DRIVER[ARGS] = function ($e, scopes, localScope){
-		var val = localEval($e.attr(ARGS), scopes, localScope);
-		$e.attr(keyval(VALS, val));
-	};
+	var REPLACERS = [
+		// Control attrs.
+		new Replacer("if", function($e, scopes, localScope){
+			processCtrlOne($e, "if", this.attr, scopes, localScope);
+		}),
+		new Replacer("if-self", function($e, scopes, localScope){
+			processCtrlOne($e, "if", this.attr, scopes, localScope);
+		}),
+		new Replacer("for", function($e, scopes, localScope){
+			processCtrlOne($e, "for", this.attr, scopes, localScope);
+		}),
+		// replace attrs.
+		new Replacer("args", function($e, scopes, localScope){
+			var val = localEval($e.attr(this.attr), scopes, localScope);
+			$e.attr(keyval(VALS, val));
+		}),
+		new Replacer("show", function($e, scopes, localScope){
+			var bool = localEval($e.attr(this.attr), scopes, localScope);
+			bool ? $e.show() : $e.hide();
+		}),
+		new Replacer("src", function($e, scopes, localScope){
+			$e.attr({src: localEval($e.attr(this.attr), scopes, localScope)});
+		}),
+		new Replacer("href", function($e, scopes, localScope){
+			$e.attr({href: localEval($e.attr(this.attr), scopes, localScope)});
+		}),
+		new Replacer("value", function($e, scopes, localScope){
+			$e.val(localEval($e.attr(this.attr), scopes, localScope));
+		}),
+		new Replacer("checked", function($e, scopes, localScope){
+			var bool = localEval($e.attr(this.attr), scopes, localScope);
+			$e.attr({'checked': bool});
+			if ($e.jqmData("checkboxradio")) $e.checkboxradio('refresh');
+		}),
+		new Replacer("html", function($e, scopes, localScope){
+			$e.html(localEval($e.attr(this.attr), scopes, localScope));
+		}),
+		new Replacer("text", function($e, scopes, localScope){
+			$e.text(""+localEval($e.attr(this.attr), scopes, localScope));
+		}),
+		new Replacer("class", function($e, scopes, localScope){
+			var classes = localEval($e.attr(this.attr), scopes, localScope);
+			if (classes == null || !(classes.length)) {
+				throw new Error(this.attr + " is not array.");
+			}
+			var bool = classes[0];
+			for (var i=1; i<classes.length; i++) {
+				$e.toggleClass(classes[i], bool);
+			}
+		})
+	];
 
 
 	/**
@@ -189,7 +180,9 @@
 		}).live('pagehide', function(ev) {
 			doScopes(ev, $(ev.target), onHide);
 		}).live('pagebeforecreate', function(ev) {
-			preProcess($(ev.target))
+			var $page = $(ev.target);
+			processTemplate($page);
+			preProcess($page);
 		}).each(function(){
 			var $page = $(this);
 			if ($page.attr(SCOPE) == null) {
@@ -236,6 +229,16 @@
 		if (scopeSrc != null) {
 			$elem[0].jqmdp_scope = localEval(scopeSrc, null, {$this: $elem});
 		}
+	}
+	/**
+	 * All templates in the page are developed.
+	 * @param {jQuery} $page page element.
+	 */
+	function processTemplate($page) {
+		$page.find(XP_TEMPLATE).each(function(){
+			var $e = $(this);
+			template($e, $e.attr(TEMPLATE));
+		})
 	}
 	
 	/**
@@ -284,7 +287,7 @@
 		};
 		function _initScope($e) {
 			var attrs = {};
-			for (var key in DP_ATTRS) attrs[key] = [];
+			for (var i=0; i<REPLACERS.length; i++) attrs[REPLACERS[i].attr] = [];
 			return {elem:$e[0], $elem:$e, stack:_makeStack($e), attrs:attrs};
 		};
 		function _findScope(scopes, node) {
@@ -295,7 +298,7 @@
 		};
 		//--- ---
 
-
+		// Remove for block.
 		preProcess($page);
 
 		// init subscopes in page.
@@ -306,8 +309,9 @@
 		});
 
 		// data-dp-* attribute is allotted to a subscope.
-		for (var key in DP_ATTRS) {
-			$page.find(DP_ATTRS[key].xpath).each(function(){
+		for (var i=0; i<REPLACERS.length; i++) {
+			var key = REPLACERS[i].attr;
+			$page.find(REPLACERS[i].xpath).each(function(){
 				var $e = $(this);
 				var scope = _findScope(scopes, getScopeNode($e)[0]);
 				if (scope == null) {
@@ -332,32 +336,17 @@
 	 */
 	function process($elem, attrs, scopes) {
 		var localScope = {};
-		// Control sentence structure processing.
-		processCond($elem, attrs[IF],     "if",  IF,     scopes, localScope);
-		processCond($elem, attrs[IFSELF], "if",  IFSELF, scopes, localScope);
-		processCond($elem, attrs[FOR],    "for", FOR,    scopes, localScope);
-
-		function _drive(key) {
-			for (var i=0; i<attrs[key].length; i++) {
-				localScope.$this = attrs[key][i];
-				// TODO: 親ノードが消える。
-				//if ($.browser.msie && getScopeNode(localScope.$this) == null) {
-				//	console.error("Not found scope. IE bug?");
-				//	continue;
-				//} 
-				REPLACE_DRIVER[key](localScope.$this, scopes, localScope);
+		for (var j=0; j<REPLACERS.length; j++) {
+			var replacer = REPLACERS[j];
+			for (var i=0; i<attrs[replacer.attr].length; i++) {
+				localScope.$this = attrs[replacer.attr][i];
+				replacer.proc(localScope.$this, scopes, localScope);
 			};
-			if ($elem.attr(key)) {
+			if ($elem.attr(replacer.attr)) {
 				localScope.$this = $elem;
-				REPLACE_DRIVER[key]($elem, scopes, localScope);
+				replacer.proc($elem, scopes, localScope);
 			}
 		}
-
-
-		// Various substituted processing.
-		_drive(ARGS);
-		for (var key in REPLACE_DRIVER) _drive(key);
-		
 		return $elem;
 	}
 	
@@ -368,53 +357,41 @@
 	 * Behavior of "if" or "for" is realized by adding the clone to DOM tree when a 
 	 * control sentence is  carried out.
 	 * 
-	 * @param $parent   Page or scope element jQuery object.
-	 * @param xpath     XPath to search an attribute.
-	 * @param cmd       Control sentence token "if" or "for".
-	 * @param attr		Attribute name.
-	 * @param scopes    scopes stack.
-	 * @param localScope  The most recent scope.
+	 * @param {jQuery} $this      Page or scope element jQuery object.
+	 * @param {string} cmd        Control sentence token "if" or "for".
+	 * @param {string} attr	      Attribute name.
+	 * @param {Array} scopes     scopes stack.
+	 * @param {Object} localScope The most recent scope.
 	 */
-	function processCond($parent, attrs, cmd, attr, scopes, localScope) {
-		// --- inner functions ---
-		function _driver($this){
-			var $body = $this[0].jqmdp_body;
-			if (isDebug) console.log(cmd+"-body="+($body ? $body.html() : "null"));
-			localScope.$this = $this;
-			localScope.__$body = $body;
-			localScope.__scopes = scopes;
+	function processCtrlOne($this, cmd, attr, scopes, localScope) {
+		var $body = $this[0].jqmdp_body;
+		if (isDebug) console.log(cmd+"-body="+($body ? $body.html() : "null"));
+		localScope.$this = $this;
+		localScope.__$body = $body;
+		localScope.__scopes = scopes;
 
-			var script = 
-				cmd+$this.attr(attr)+"{_processClone($this, __$body, __scopes);}"
-			if (attr == IFSELF) script += "else {$this.remove();}";
+		var script = 
+			cmd+$this.attr(attr)+"{_processClone($this, __$body, __scopes);}"
+		if (attr == IFSELF) script += "else {$this.remove();}";
 
-			localEval(script, scopes, localScope);
-			_markup($this);
-		}
-		/**
-		 * JQM Element refresh.
-		 * It is necessary to handle JQM by manual refresh() for a dynamic change.
-		 * @param {jQuery} $elem
-		 */
-		function _markup($elem) {
-			// Only document descended.
-			// DOM falgment is processing $.mobile.page() in _processClone().
-			for (var e=$elem[0]; e != null && e != document; e=e.parentNode);
-			if (e == null) return;
-	
-			// TODO: other no-role of listing widget.
-			var role = $elem.jqmData("role");
-			var widget = role ? $elem.jqmData(role) : $elem.jqmData("selectmenu");
-			if (widget && widget.refresh) widget.refresh(true);
-		}
-		// --- ---
-	
-		for (var i = 0; i < attrs.length; i++) {
-			_driver(attrs[i]);
-		}
-		if ($parent.attr(attr)) {
-			_driver($parent);
-		}
+		localEval(script, scopes, localScope);
+		_markup($this);
+	}
+	/**
+	 * JQM Element refresh.
+	 * It is necessary to handle JQM by manual refresh() for a dynamic change.
+	 * @param {jQuery} $elem
+	 */
+	function _markup($elem) {
+		// Only document descended.
+		// DOM falgment is processing $.mobile.page() in _processClone().
+		for (var e=$elem[0]; e != null && e != document; e=e.parentNode);
+		if (e == null) return;
+
+		// TODO: other no-role of listing widget.
+		var role = $elem.jqmData("role");
+		var widget = role ? $elem.jqmData(role) : $elem.jqmData("selectmenu");
+		if (widget && widget.refresh) widget.refresh(true);
 	}
 
 	/**
@@ -436,9 +413,10 @@
 	function _getAttrs($elem) {
 		preProcess($elem);
 		var attrs = {};
-		for (var key in DP_ATTRS) {
+		for (var i=0; i<REPLACERS.length; i++) {
+			var key = REPLACERS[i].attr;
 			attrs[key] = [];
-			$elem.find(DP_ATTRS[key].xpath).each(function(){
+			$elem.find(REPLACERS[i].xpath).each(function(){
 				attrs[key].push($(this))
 			});
 		}
@@ -450,9 +428,12 @@
 	 * @param $elem   scope element jQuery object.
 	 */
 	function preProcess($elem){
-		_preProcess0($elem, FOR);
-		_preProcess0($elem, IF);
-		_preProcess0($elem, IFSELF);
+		_preProcess0($elem, REPLACERS[0]);
+		_preProcess0($elem, REPLACERS[1]);
+		_preProcess0($elem, REPLACERS[2]);
+		_preProcess1($elem, REPLACERS[0]);
+		_preProcess1($elem, REPLACERS[1]);
+		_preProcess1($elem, REPLACERS[2]);
 		return $elem;
 	}
 	
@@ -462,10 +443,10 @@
 	 * It is cut, and the body is stored.
 	 * The control sentence structure will have an empty body.
 	 * @param $elem   scope element jQuery object.
-	 * @param xpath   XPath to search an attribute.
+	 * @param replacer   Replacer instane.
 	 */
-	function _preProcess0($elem, attr) {
-		function setBody() {
+	function _preProcess0($elem, replacer) {
+		function saveBody() {
 			if (this.jqmdp_body == null) {
 				this.jqmdp_body = $("<div></div>");
 				this.jqmdp_body.append($(this).contents().clone());
@@ -473,9 +454,12 @@
 			}
 		}
 		
-		if ($elem.attr(attr)) setBody.call($elem[0]);
-		$elem.find(DP_ATTRS[attr].xpath).each(setBody).html("");
-		if ($elem.attr(attr)) $elem[0].html("");
+		if ($elem.attr(replacer.attr)) saveBody.call($elem[0]);
+		$elem.find(replacer.xpath).each(saveBody);
+	}
+	function _preProcess1($elem, replacer){
+		$elem.find(replacer.xpath).html("");
+		if ($elem.attr(replacer.attr)) $elem.html("");
 	}
 
 	/**
@@ -749,6 +733,10 @@
 	//-------------------------------------------------------------------------
 	// Exports functions.
 	//-------------------------------------------------------------------------
+	var WINDOW_OBJ_ERROR = "JQMDP alert!\nThis is window. \n"
+		+"href='javascript:$(this)' is not usable.\nPlease use onclick.";
+	var NULL_OBJ_ERROR = "Target element is null.";
+	
 	/**
 	 * A bridge function.
 	 * Extends JQMDP functions for $this.
@@ -772,6 +760,8 @@
 	export_jqmdp.absPath=   absPath;
 	export_jqmdp.debug=     debug;
 	export_jqmdp.getScopeNode = getScopeNode;
+	export_jqmdp.Replacer = Replacer;
+	export_jqmdp.localEval = localEval;
 
 	var jqmdp_fn = {};
 	jqmdp_fn.refresh=   function(delay){return refresh(this,delay);};
@@ -793,9 +783,6 @@
 		var $e = (dpId == null) ? $this : byId($this, dpId);
 		return scope($e, val);
 	}
-	var WINDOW_OBJ_ERROR = "JQMDP alert!\nThis is window. \n"
-		+"href='javascript:$(this)' is not usable.\nPlease use onclick.";
-	var NULL_OBJ_ERROR = "Target element is null.";
 
 	//-------------------------------------------------------------------------
 	// jQuery extends.
@@ -808,7 +795,6 @@
 	//------------------------------------------------------------------------
 	// Bootup.
 	//------------------------------------------------------------------------
-	// TODO: $(document).bind("mobileinit", function(){init(document.body);});
 	if ($.mobile != null) alert("You must load 'jqmdp' before than 'jQuery mobile'.");
 	$(function(){init(document.body);});
 	//$(document).bind('mobileinit', mobileinit);
