@@ -14,7 +14,7 @@
 	//-------------------------------------------------------------------------
 	// Debus.
 	//-------------------------------------------------------------------------
-	var isDebug = false;
+	var isDebug = true;
 	if (undefined === window.console) {
 		window.console = {log:function(){}, error:function(){}}; 
 	}
@@ -182,7 +182,7 @@
 		}).live('pagebeforecreate', function(ev) {
 			var $page = $(ev.target);
 			processTemplate($page);
-			doScopes(ev, $page, initScope);
+			preProcess($page)
 		}).each(function(){
 			var $page = $(this);
 			if ($page.attr(SCOPE) == null) {

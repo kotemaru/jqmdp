@@ -66,21 +66,28 @@ function Picasa(){this.initialize.apply(this, arguments)};
 	This.listAlbum = function() {
 		var self = this;
 		var url = URL_ALBUM.replace(/[$][{]user[}]/,self.user);
-		$.getJSON(url, null, function(json, state) {
-			// TODO: error
-			var list = [];
-			for (var i=0; i<json.feed.entry.length; i++) {
-				var e = json.feed.entry[i];
-				if (e.gphoto$access.$t == "public") {
-					list.push({
-						thumbnail: e.media$group.media$thumbnail[0].url,
-						albumid: e.gphoto$id.$t
-					});
+		var type = $.browser.msie ? "jsonp" : "json";
+		
+		$.ajax({
+			url:url, cache:true, dataType: type,
+			error: function(xreq,stat,err) {
+				alert("load error:"+err+" "+url);
+			},
+			success: function(json, type) {
+				var list = [];
+				for (var i=0; i<json.feed.entry.length; i++) {
+					var e = json.feed.entry[i];
+					if (e.gphoto$access.$t == "public") {
+						list.push({
+							thumbnail: e.media$group.media$thumbnail[0].url,
+							albumid: e.gphoto$id.$t
+						});
+					}
 				}
+				self.albums = list;
+				self.$elem.jqmdp("albums").show().refresh();
+				self.$elem.jqmdp("photos").hide();
 			}
-			self.albums = list;
-			self.$elem.jqmdp("albums").show().refresh();
-			self.$elem.jqmdp("photos").hide();
 		});
 	}
 	
@@ -92,29 +99,35 @@ function Picasa(){this.initialize.apply(this, arguments)};
 		var url = URL_PHOTO.replace(/[$][{]user[}]/,self.user)
 					.replace(/[$][{]albumid[}]/,self.albumid);
 	
-		$.getJSON(url, null, function(json, state) {
-			// TODO: error
-			var list = [];
-			if (json.feed.entry == null) {
-				self.photos = list;
-				self.$elem.jqmdp("photos").refresh();
-				return;
-			}
-			for (var i=0; i<json.feed.entry.length; i++) {
-				var e = json.feed.entry[i];
-				if (e.gphoto$access.$t == "public") {
-					list.push({
-						thumbnail: e.media$group.media$thumbnail[0].url,
-						w:e.media$group.media$thumbnail[0].width,
-						h:e.media$group.media$thumbnail[0].height,
-						src: e.content.src,
-					});
+		var type = $.browser.msie ? "jsonp" : "json";
+		$.ajax({
+			url:url, cache:true, dataType: type,
+			error: function(xreq,stat,err) {
+				alert("load error:"+err+" "+url);
+			},
+			success: function(json, type){
+				var list = [];
+				if (json.feed.entry == null) {
+					self.photos = list;
+					self.$elem.jqmdp("photos").refresh();
+					return;
 				}
+				for (var i = 0; i < json.feed.entry.length; i++) {
+					var e = json.feed.entry[i];
+					if (e.gphoto$access.$t == "public") {
+						list.push({
+							thumbnail: e.media$group.media$thumbnail[0].url,
+							w: e.media$group.media$thumbnail[0].width,
+							h: e.media$group.media$thumbnail[0].height,
+							src: e.content.src,
+						});
+					}
+				}
+				
+				self.photos = list;
+				self.$elem.jqmdp("albums").hide();
+				self.$elem.jqmdp("photos").show().refresh();
 			}
-			
-			self.photos = list;
-			self.$elem.jqmdp("albums").hide();
-			self.$elem.jqmdp("photos").show().refresh();
 		});
 	}
 
