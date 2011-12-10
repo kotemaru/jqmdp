@@ -47,6 +47,7 @@
 		<ul data-role="listview" data-inset="true" >
 			<li><a href="#basic">基本形</a></li>
 			<li><a href="#map">Google Map</a></li>
+			<li><a href="#picasa">Picasa連係</a></li>
 			<li><a href="#test">テスト</a></li>
 		</ul>
 	</div>
@@ -123,6 +124,45 @@
 		<div data-role="footer" data-position="fixed" data-dp-template="../../footer.html"></div>
 	</div>
 
+	
+	<!-- ============================================== -->
+	<div data-role="page" id="picasa" >
+		<div data-role="header" data-position="fixed" data-theme="e" >
+			<h1>Picasa連係</h1>
+			<a href="#index" data-icon="back" data-ajax="false"
+				data-direction="reverse" data-iconpos="notext"></a>
+			<a href="../../index.html" data-icon="home"  data-ajax="false"
+				data-transition="none" data-iconpos="notext"></a>
+		</div>
+		<div data-role="content" >
+			<div class="left-nav">
+				<div data-dp-template="../../title.html" ></div>
+				<hr/>
+				<div data-dp-template="#linkList"></div>
+			</div>
+			
+			<div class="right-nav" >
+				Picasa の公開アルバムから画像を選択します。<br />
+				<p>
+				画像をクリックするとダイアログが現れアルバム、写真で選択できます。
+				
+				<p><a href="../../samples/picasa/picasa.html"
+					data-role="button" data-icon="arrow-r" data-iconpos="right"
+					target="_blank" data-ajax="false">サンプルを実行</a>
+				</p>
+				
+				<h3>ソース</h3>
+				samples/picasa/picasa.html:
+				<pre data-dp-html="(Docs.getSrc($this,'../../samples/picasa/picasa.html'))"></pre>
+				samples/picasa/Picasa.js:
+				<pre data-dp-html="(Docs.getSrc($this,'../../samples/picasa/Picasa.js'))"></pre>
+				samples/picasa/Picasa.css:
+				<pre data-dp-html="(Docs.getSrc($this,'../../samples/picasa/Picasa.css'))"></pre>
+			</div>
+
+		</div>
+		<div data-role="footer" data-position="fixed" data-dp-template="../../footer.html"></div>
+	</div>
 	
 	<!-- ============================================== -->
 	<div data-role="page" id="test" >

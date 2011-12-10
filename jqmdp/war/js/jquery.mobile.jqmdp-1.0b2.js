@@ -1,5 +1,5 @@
 /*
-* jQuery Mobile Dynamic Page plugin v1.0b2
+* jQuery Mobile Dynamic Page plugin v1.0rc1
 *
 * Copyright 2011 (c) kotemaru@kotemaru.org
 * Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
@@ -163,8 +163,8 @@
 	 * The function sets an event handler of jqmdp in all JQM Pages.
 	 * @param root Usually appoint document.body.
 	 */
-	function init(root) {
-		var $pages = $(root).find("div[data-role='page']");
+	function init(root, role) {
+		var $pages = $(root).find("div[data-role='"+role+"']");
 
 		$pages.live('pageinit', function(ev) {
 			var $page = $(ev.target);
@@ -182,7 +182,7 @@
 		}).live('pagebeforecreate', function(ev) {
 			var $page = $(ev.target);
 			processTemplate($page);
-			preProcess($page);
+			doScopes(ev, $page, initScope);
 		}).each(function(){
 			var $page = $(this);
 			if ($page.attr(SCOPE) == null) {
@@ -576,8 +576,15 @@
 			$scopeNode[0].jqmdp_scope = val;
 			return $this;
 		} else {
-			if (null == $scopeNode[0].jqmdp_scope) {
-				doScopes(null, $this, initScope);
+			if (undefined === $scopeNode[0].jqmdp_scope) {
+				var $page = $this;
+				if ($this.attr(SCOPE) == null) {
+					$page = $this.parents("[data-role='page']");
+					if ($page.length == 0) {
+						$page = $this.parents("[data-role='dialog']");
+					}
+				}
+				doScopes(null, $page.first(), initScope);
 			}
 			if ($scopeNode.length > 0 && $scopeNode[0].jqmdp_scope) {
 				return $scopeNode[0].jqmdp_scope
@@ -796,7 +803,10 @@
 	// Bootup.
 	//------------------------------------------------------------------------
 	if ($.mobile != null) alert("You must load 'jqmdp' before than 'jQuery mobile'.");
-	$(function(){init(document.body);});
+	$(function(){
+		init(document.body, "page");
+		init(document.body, "dialog");
+	});
 	//$(document).bind('mobileinit', mobileinit);
 
 })(jQuery);

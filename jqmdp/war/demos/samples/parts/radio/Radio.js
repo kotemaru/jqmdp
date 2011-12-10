@@ -4,10 +4,7 @@
   */
 function Radio(){this.initialize.apply(this, arguments)};
 (function(Class){
-	//var Package = window;
-	//var Class = function Radio(){this.initialize.apply(this, arguments)};
 	var This = Class.prototype;
-	//Package[Class.name] = Class;
 
 	var XP_DP_ARGS = "a[data-dp-args]";
 	var OPTS = {

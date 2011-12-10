@@ -18,6 +18,8 @@ Docs.trimHtml = function(str) {
 
 Docs.trimJs = function(str) {
 	return str.replace(/\t/g,"  ")
+		.replace(/&/g,"&amp;")
+		.replace(/</g,"&lt;")
 		.replace(/\/\/(.*)$/mg,"//<i>$1</i>")
 		.replace(/\/\*\/?(([\r\n]|[^\/]|[^*]\/)*)\*\//mg,"/*<i>$1</i>*/")
 		.replace(/\n/gm,"<br/>")
