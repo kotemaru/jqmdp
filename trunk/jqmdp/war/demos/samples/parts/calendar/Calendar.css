@@ -24,7 +24,6 @@
 	width: 250px;
 	overflow: hidden;
 	margin:2px;
-	border: 1px solid gray\9; /* for IE8 */
 }
 .dp-calendar table tr:first-child th {
 	background: #fff;

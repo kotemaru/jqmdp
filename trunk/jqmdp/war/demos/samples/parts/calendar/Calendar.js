@@ -4,10 +4,7 @@
  */
 function Calendar(){this.initialize.apply(this, arguments)};
 (function(Class){
-	//var Package = window;
-	//var Class = function Calendar(){this.initialize.apply(this, arguments)};
 	var This = Class.prototype;
-	//Package[Class.name] = Class;
 	
 	var TEMPL      = $.jqmdp.absPath("Calendar.html");
 	var CL_BASE    = "dp-calendar";

@@ -3,10 +3,7 @@
 //---------------------------------------------------
 function Rating(){this.initialize.apply(this, arguments)};
 (function(Class){
-	//var Package = window;
-	//var Class = function Rating(){this.initialize.apply(this, arguments)};
 	var This = Class.prototype;
-	//Package[Class.name] = Class;
 
 	// リソースのURLをこのJSファイルからの相対パスから絶対パスに変換している。
 	var TEMPL   = $.jqmdp.absPath("Rating.html");
