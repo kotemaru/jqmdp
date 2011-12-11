@@ -66,10 +66,9 @@ function Picasa(){this.initialize.apply(this, arguments)};
 	This.listAlbum = function() {
 		var self = this;
 		var url = URL_ALBUM.replace(/[$][{]user[}]/,self.user);
-		var type = $.browser.msie ? "jsonp" : "json";
 		
 		$.ajax({
-			url:url, cache:true, dataType: type,
+			url:url, cache:true, dataType: "jsonp",
 			error: function(xreq,stat,err) {
 				alert("load error:"+err+" "+url);
 			},
@@ -99,9 +98,8 @@ function Picasa(){this.initialize.apply(this, arguments)};
 		var url = URL_PHOTO.replace(/[$][{]user[}]/,self.user)
 					.replace(/[$][{]albumid[}]/,self.albumid);
 	
-		var type = $.browser.msie ? "jsonp" : "json";
 		$.ajax({
-			url:url, cache:true, dataType: type,
+			url:url, cache:true, dataType: "jsonp",
 			error: function(xreq,stat,err) {
 				alert("load error:"+err+" "+url);
 			},
