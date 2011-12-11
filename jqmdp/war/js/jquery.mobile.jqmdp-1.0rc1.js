@@ -14,7 +14,7 @@
 	//-------------------------------------------------------------------------
 	// Debus.
 	//-------------------------------------------------------------------------
-	var isDebug = true;
+	var isDebug = false;
 	if (undefined === window.console) {
 		window.console = {log:function(){}, error:function(){}}; 
 	}
