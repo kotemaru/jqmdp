@@ -210,7 +210,7 @@
 			// Because JQM stops when I throw an exception.
 			console.error(e.stack);
 			alert(e.message+"\n"+e.stack);
-			throw e;
+			//throw e;
 		}
 	}
 
@@ -490,7 +490,10 @@
 			return _res;
 		} catch (e) {
 			e.message = "eval: "+_script+"\n\n"+e.message;
-			throw e;
+			//throw e;
+			if (isDebug) alert(e.message+"\n"+e.stack);
+			console.error(e.message+"\n"+e.stack);
+			return undefined;
 		}
 	}
 	
@@ -540,6 +543,7 @@
 	 * @return scope  jQuery object or null.
 	 */
 	function byId($this, name) {
+		if (!name.match(/^[0-9a-zA-Z\-_]+$/)) throw new Error("Bad dp-id "+name);
 		var $thisScope = getScopeNode($this);
 		if ($thisScope == null) return null;
 
