@@ -12,3 +12,17 @@ browser: Chrome
 現象: 記号を dp-id に指定してエラーにならない。
 原因: チェック洩れ
 対処: チェック追加
+
+#0003: open 2011/12/16 -  
+TP: replace-attr/value
+browser: Chrome
+現象: data-dp-value で select を変更しても表示が変わらない。
+原因: 
+対処:
+ 
+#0004: open 2011/12/17 -  
+TP: template/outer
+browser: Chrome
+現象: 外部テンプレート内のdata-dp-属性が処理されない。
+原因: 仕様バグ。APIはコールバックが有るが HTML だとonloadが拾えない。
+対処: 

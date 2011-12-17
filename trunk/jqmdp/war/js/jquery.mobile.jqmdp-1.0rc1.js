@@ -60,9 +60,7 @@
 	var SCOPE = PRE+"scope";
 	var DP_ID = PRE+"id";
 	var TEMPLATE = PRE+"template";
-
 	var VALS = PRE+"vals";
-
 	var IFSELF= PRE+"if-self";
 
 	var XP_SCOPE    = "*["+SCOPE+"]";
@@ -624,6 +622,7 @@
 		return $this;
 	}
 	function _template($this, $src, callback) {
+		if ($src.length == 0) $src = $("<div>Template error: not found.</div>");
 		var $clone = $src.clone();
 		$clone.page();
 		$this.html("");
@@ -650,7 +649,9 @@
 					var msg = (location.protocol == "file:")
 						? "\nYour browser does not support LocalFile XHR."
 						  +"\n'localfile Access-Control-Allow-Origin' on Google :-P" : "";
-					alert("Template load error:"+err+" "+url+msg);
+					//alert("Template load error:"+err+" "+url+msg);
+					console.error("Template error:"+err+" "+url+msg)
+					_onLoadTempl("<div>Template error:"+err+" "+url+msg+"</div>", url);
 				}
 			});
 		} else if (exTemplates[url].node === undefined) {
