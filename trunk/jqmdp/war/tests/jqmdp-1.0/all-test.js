@@ -1,4 +1,8 @@
 
+$(function(){
+	$(document.body).append($("<iframe id='sandbox'></iframe>"));
+})
+
 var Sandbox = function(url){
 	this.url = url;
 	this.win = null;
@@ -6,16 +10,45 @@ var Sandbox = function(url){
 	this.autoClose = true;
 }
 Sandbox.prototype = {
-	setup: function() {
+	setupWin: function() {
 		var self = this;
 		this.win = window.open(this.url, "_blank");
-		$(this.win).load(function(){
-			var $handle = $(this.document);
+		this._onload = function(){
+			var $handle = $(self.win.document);
 			for (var i=0; i<self.onload.length; i++) {
-				self.onload[i]($handle);
+				self.onload[i]($handle, self);
 			}
-		});
+		};
+		function checker() {
+			if (self.win.document.readyState == "complete") {
+				self._onload();
+			} else {
+				setTimeout(checker, 50);
+			}
+		}
+		setTimeout(checker, 100);
 	},
+	setup: function() {
+		var self = this;
+		var ifr = document.getElementById("sandbox");
+		this.win = ifr.contentWindow;
+		function onload(){
+			var $handle = $(self.win.document);
+			for (var i=0; i<self.onload.length; i++) {
+				self.onload[i]($handle, self);
+			}
+		};
+		ifr.onload = onload;
+		// for IE
+		ifr.onreadystatechange = function(){
+			if (this.readyState == "complete") {
+				onload();
+			}
+		};
+
+		ifr.src = this.url;
+	},
+
 	teardown: function() {
 		if (this.autoClose) this.win.close()
 	},
@@ -39,7 +72,7 @@ function wait(cond, func, args) {
 
 // --------------------------------------------------------------
 var sandbox;
-module("scope", new Sandbox("data/scope.html"));
+module("scope", new Sandbox("data/scope.jsp"+QUERY));
 
 test("position", function() {
 	stop();
@@ -98,10 +131,11 @@ test("dpid-name", function() {
 
 test("dpid-ref", function() {
 	stop();
-	this.load(function($sandbox){
+	this.load(function($sandbox, sandbox){
 		start();
-		var $iframe = $("#sandbox");
-		var dpidMap = $iframe[0].contentWindow.dpidMap;
+		//var $iframe = $("#sandbox");
+		//var dpidMap = $iframe[0].contentWindow.dpidMap;
+		var dpidMap = sandbox.win.dpidMap;
 
 		var errMap = {
 			"brother-child": "null",
@@ -117,8 +151,10 @@ test("dpid-ref", function() {
 	});
 });
 
+var QUERY = location.search;
+
 // --------------------------------------------------------------
-module("template", new Sandbox("data/template.html"));
+module("template", new Sandbox("data/template.jsp"+QUERY));
 
 test("inner", function() {
 	stop();
@@ -153,7 +189,7 @@ test("outer", function() {
 });
 
 // --------------------------------------------------------------
-module("replace-attr", new Sandbox("data/replace-attr.html"));
+module("replace-attr", new Sandbox("data/replace-attr.jsp"+QUERY));
 
 
 test("text", function() {
@@ -249,7 +285,7 @@ test("args", function() {
 
 
 // --------------------------------------------------------------
-module("ctrl-attr", new Sandbox("data/ctrl-attr.html"));
+module("ctrl-attr", new Sandbox("data/ctrl-attr.jsp"+QUERY));
 
 
 test("for", function() {

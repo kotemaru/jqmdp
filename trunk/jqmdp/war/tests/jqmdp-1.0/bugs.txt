@@ -13,12 +13,12 @@ browser: Chrome
 原因: チェック洩れ
 対処: チェック追加
 
-#0003: open 2011/12/16 -  
+#0003: open 2011/12/16 - close
 TP: replace-attr/value
 browser: Chrome
 現象: data-dp-value で select を変更しても表示が変わらない。
 原因: 
-対処:
+対処: 済
  
 #0004: open 2011/12/17 -  
 TP: template/outer

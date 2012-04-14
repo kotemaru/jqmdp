@@ -7,11 +7,11 @@
 		content="width=auto; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;" />
 	<title>jqmdp test page</title> 
 
-	<link rel="stylesheet" href="../../../js/jqm/jquery.mobile-1.0.css" />
-	<script src="../../../js/jquery-1.6.4.js"></script>
 
-	<script src="../../../js/jquery.mobile.jqmdp-1.0rc1.js"></script>
-	<script src="../../../js/jqm/jquery.mobile-1.0.js"></script>
+	<jsp:include page="/pack.jsp" >
+		<jsp:param name="jqmver" value="<%= request.getParameter(&quot;jqmver&quot;)%>" />
+	</jsp:include>
+	
 	<script>
 var data = {
 	a: 'a<b>&amp;c</b>d',
