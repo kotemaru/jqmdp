@@ -20,10 +20,10 @@
 			,"jqm/jquery.mobile-1.0.1.js"
 		],
 		"1.1.0": [
-			 "jqm11/jquery.mobile-1.1.0-rc.2.min.css"
+			 "jqm11/jquery.mobile-1.1.0.min.css"
 			,"jquery-1.7.1.js"
 			,JQMDP
-			,"jqm11/jquery.mobile-1.1.0-rc.2.js"
+			,"jqm11/jquery.mobile-1.1.0.js"
 		],
 	};
 

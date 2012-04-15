@@ -18,8 +18,8 @@ String jqmver = request.getParameter("jqmver");
 <script src="<%=ctxpath%>/js/jqm/jquery.mobile-1.0.1.js"></script>
 
 <% } else { %>
-<link rel="stylesheet" href="<%=ctxpath%>/js/jqm11/jquery.mobile-1.1.0-rc.2.min.css" />
+<link rel="stylesheet" href="<%=ctxpath%>/js/jqm11/jquery.mobile-1.1.0.min.css" />
 <script src="<%=ctxpath%>/js/jquery-1.7.1.js"></script>
 <script src="<%=ctxpath%>/js/jquery.mobile.jqmdp-1.0rc2.js"></script>
-<script src="<%=ctxpath%>/js/jqm11/jquery.mobile-1.1.0-rc.2.js"></script>
+<script src="<%=ctxpath%>/js/jqm11/jquery.mobile-1.1.0.js"></script>
 <% } %>
