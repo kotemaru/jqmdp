@@ -1,0 +1,152 @@
+scope
+	場所
+		page
+		div
+	ネスト
+		３段以上
+		並列
+	内容
+		グローバル変数
+		new
+
+scopeデータ参照
+	参照先
+		カレント
+		親継承
+		祖先継承
+		親上乗り
+		祖先上乗り
+		子孫 = 見えない
+		兄弟 = 見えない
+	内容
+		文字列
+		数値
+		boolean
+		null
+		undefined
+		オブジェクト
+		配列
+		関数呼び出し
+
+dp-id
+	内容
+		英数字、_、- 全部使う
+		記号を使う = error
+		２重定義 = error
+	参照
+		カレントスコープ内
+			自身node
+			親node
+			祖先node
+			子node
+			子孫node
+			兄弟node
+		親スコープ内
+		祖先スコープ内
+		子スコープ内 = 見えない
+		子孫スコープ内 = 見えない
+		兄弟スコープ内 = 見えない
+
+
+template
+	内部ID
+		存在する
+		存在しない = error
+		テンプレート内の data-dp 属性
+	外部URL
+		存在する
+		存在しない = error
+		他ドメイン = error
+		非同期(初回)
+		同期(二回目)
+		テンプレート内の data-dp 属性
+
+
+text
+	<,&を含む
+	null
+html
+	<,&を含む
+	null
+src
+	内容
+		存在するURL
+		存在しないURL
+		null = 変更されない
+	タグ
+		img
+		iframe
+	
+href
+		存在するURL
+		存在しないURL
+		null = 変更されない
+	タグ
+		a
+
+value
+	input
+		"文字列"
+		""
+		null = 変更されない
+	textarea
+		"文字列"
+		""
+		null = 変更されない
+	select
+		["選択可能"]
+		["選択不可能"]
+		[]
+		null = 変更されない
+
+show
+	true
+	false
+	null = false
+
+class
+	[true,class1,class2,class3]
+	[false,class1,class2,class3]
+	初期値のクラス有り
+
+args
+	ループ変数
+	定数
+
+for
+	i++
+	in
+if
+	true
+	false
+if-self
+	true
+	false
+制御構文ネスト
+	for,for
+	for,if
+	for,if-self
+	if,for
+	if,if
+	if,if-self
+	if-self,for
+	if-self,if
+	if-self,if-self
+	for,if,for,if
+
+イベントハンドラ
+	ページのスコープ
+		onPageInit
+		onBeforeShow
+		onShow
+		onBeforeHide
+		onHide
+	ページ内のスコープ
+		onPageInit
+		onBeforeShow
+		onShow
+		onBeforeHide
+		onHide
+
+
+Method & Utilities
