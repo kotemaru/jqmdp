@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <project basedir="." default="release" name="jqmdp">
-	<property name="version" value="1.0rc1"/>
+	<property name="version" value="1.0rc2"/>
 	
 	<property name="work" value="${basedir}/work"/>
 	<property name="packname" value="jquery.mobile.jqmdp-${version}"/>
